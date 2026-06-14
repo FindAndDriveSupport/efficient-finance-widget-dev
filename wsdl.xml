@@ -1,0 +1,2011 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://ws.edith.co.za/EdithServices/PolicyServicesV300" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://ws.edith.co.za/EdithServices/PolicyServicesV300" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">A web service for adding and retrieving policies.</wsdl:documentation>
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://ws.edith.co.za/EdithServices/PolicyServicesV300">
+      <s:element name="CreatePolicy">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="Policy" type="tns:Policy" />
+            <s:element minOccurs="0" maxOccurs="1" name="Accessories" type="tns:ArrayOfAccessory" />
+            <s:element minOccurs="0" maxOccurs="1" name="Products" type="tns:ArrayOfProduct" />
+            <s:element minOccurs="0" maxOccurs="1" name="QuoteProducts" type="tns:ArrayOfQuoteProduct" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="Credentials">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyPassword" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Policy">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="SalesCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PolicySource" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AdvancePaymentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AgreementType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankAccounts" type="tns:ArrayOfBankAccount" />
+          <s:element minOccurs="0" maxOccurs="1" name="BodyNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BranchCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CarDeliveryDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CashInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Category" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChassisNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Client" type="tns:Person" />
+          <s:element minOccurs="0" maxOccurs="1" name="Colour" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyAddress" type="tns:PhysicalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyRegistrationNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyTradingAsName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyVATNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyVATVendorInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreditRehabilitationInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DICAmount" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DealerDepositValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DeliveryCost" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DeliveryFee" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DepositValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CashDepositValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChequeDepositValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EFTDepositValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DiscountAmount" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Driver" type="tns:Person" />
+          <s:element minOccurs="0" maxOccurs="1" name="DriverRelation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EngineNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EstablishmentCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyEstablishedDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExistingPlanExpiryDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExistingPlanExpiryKilometres" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExistingPlanType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExistingWarrantyExpiryDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExistingWarrantyExpiryKilometres" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExistingWarrantyInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExpectedAnnualMileage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExtremeVehicleUsageInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIUserEmployeeNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIUserRSAIDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceApplications" type="tns:ArrayOfFinanceApplication" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceInitiationFee" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceRate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceRateType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceSchemeDealInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceTerm" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FirstPaymentExtendedInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FirstRegistrationDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FleetAssist" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FullServiceHistoryInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GearlockInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HPIReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ImmobiliserInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceArrangedBy" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceBrokerCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceCardLicenceInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceCommission" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceDeclineMotorComprehensiveQuoteInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceDriversLicenceDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceDriversLicenceType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceLastClaimYears" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceParkedAtNight" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceParkedDuringDay" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsurancePremium" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsurancePreviousInsuranceInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InteriorTrim" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InvoiceDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InvoiceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InvoicePaidDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Manufacturer" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ManufacturerApprovedUsedInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ManufacturerDerivativeCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarkDown" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarketingConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarketingSource" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarketingSourceDetail" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MembershipRegistrationDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Model" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NewUsed" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OdometerReading" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OffRoadUsagePercentage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherCommissionAmount" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherCompanyConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherCostAmount" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherExpenses" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherIncome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OverAllowance" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentDay" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentFrequency" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentMethod" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PlanExpiryKilometres" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PlanExpiryMonths" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PlanType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PolicyNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PopiConcentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreArrangedFinanceInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreDeliveryCost" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Rebate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Reconditioning" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RegistrationCost" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RegistrationFee" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RegistrationNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Relative" type="tns:Person" />
+          <s:element minOccurs="0" maxOccurs="1" name="RelativeRelation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResidualPercentage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResidualValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RetailPrice" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesEmployeeNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesOTPNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesQuoteNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesRSAIDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Spouse" type="tns:Person" />
+          <s:element minOccurs="0" maxOccurs="1" name="StockDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StockNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TakeABreakMonth" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxiConversionCertificateIssueDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxiConversionCertificateNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TrackingDeviceInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInCashInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInCashPaybackValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInCurrentInstallment" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInFinanceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInSettlementValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TransactionType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VINNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChassisVINNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCost" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleDescription" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleSource" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleUse" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RegistrationLicenceDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WarrantyCommencementDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WarrantyExpiryKilometres" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WarrantyExpiryMonths" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WarrantyInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Condition" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ShockAbsorberInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDXConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IVXConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyDetails" type="tns:CompanyDetails" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfBankAccount">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="BankAccount" nillable="true" type="tns:BankAccount" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="BankAccount">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="AccountHolderName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccountOpenDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccountType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankBranchCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreditCardType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PrimaryAccountInd" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Person">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="AffiliatedToPIPInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AffiliationToPIP" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AdminOrderInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BasicSalary" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BirthDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BondHolder" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BondHolderBankCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BondRentPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BirthCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CarAllowance" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChildMaintenance" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CitizenshipCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ClothingAccountPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CoDebtorInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Commission" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ContactMethod" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CorrespondenceLanguage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreditCardPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreditDisputeInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CurrentEmploymentStartDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DebtRearrangementInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DebtReviewInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ForeignAffiliationInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EducationCosts" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EducationLevel" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmailAddress" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmployeeNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmployerName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmploymentAddress" type="tns:PhysicalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmploymentType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EthnicGroup" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FaxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FoodEntertainmentCosts" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FundsSource" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FurnitureAccountPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GarnisheeOrderInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Gender" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GraduateInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GuarantorInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeLanguage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HouseBondBalance" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HouseCurrentValue" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HouseHoldExpenses" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HousePurchaseDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HousePurchasePrice" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Industry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Initials" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsolventInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsurancePayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="LastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="LoanRepayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MaritalStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarriageDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarriageType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MobileContractType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MunicipalPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NationalityCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NettSalary" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Occupation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OccupationLevel" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherAllowance" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherIncome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherIncomeSource" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OverTime" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OverdraftPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PassportExpiryDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PassportIssueDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PersalInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PhysicalAddress" type="tns:PhysicalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="PhysicalAddressDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PIPFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PIPLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostalAddress" type="tns:PostalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreferredName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreferredStatementMethod" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousEmployerName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousEmploymentAddress" type="tns:PhysicalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousEmploymentStartDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousPhysicalAddress" type="tns:PhysicalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousPhysicalAddressDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProfessionalInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PublicDriverPermitInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Reimbursement" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResidenceCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResidentialStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RetrenchmentNotifyInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalaryDay" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SequestrianOrderInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SuretyAmount" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SuretyInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxRegisteredInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TelephonePayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TransportCosts" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UsePhysicalAsEmploymentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UsePhysicalAsPostalInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleRepayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WorkTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WorkTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MedicalAidNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MedicalAidScheme" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactName1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactName2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactNumber1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactNumber2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Allergies" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MedicalConditions" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CurrentChronicMedication" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AllowMobileContactInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AllowSMSContactInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AllowEmailContactInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DriversLicenceDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RentalIncome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MaintenanceIncome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="LoanDeductions" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SecurityPayments" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherPaymentsDescription" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SettledDebt" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AlternativeMobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VatNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BondLiabilityPercentage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IndustrySector" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProminentlyInfluentialPersonsInAuthority" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PhysicalAddress">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Address1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Address2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="City" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Country" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Province" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Suburb" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AddressType" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PostalAddress">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Address1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Address2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AddressType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="City" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Country" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="POBoxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostNetSuiteNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PrivateBagNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Province" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Suburb" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfFinanceApplication">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="FinanceApplication" nillable="true" type="tns:FinanceApplication" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="FinanceApplication">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DataAttestationInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PrivacyDisclosureConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherCompanyConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarketingConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExternalMarketingConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarketResearchConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AlternateCommunicationInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProofOfAddressConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TelesalesMarketingConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmailMarketingConsentInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SMSMarketingConsentInd" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="CompanyDetails">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradingAsName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RegistrationNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VatNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EstablishmentCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EntityType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Industry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IndustrySector" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BlackOwnedInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BlackOwnedPercentage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeCommencementDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PhysicalAddress" type="tns:PhysicalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostalAddress" type="tns:PostalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="CountriesOfOperation" type="tns:ArrayOfString" />
+          <s:element minOccurs="0" maxOccurs="1" name="BalanceSheets" type="tns:ArrayOfBalanceSheet" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankAccounts" type="tns:ArrayOfBankAccount" />
+          <s:element minOccurs="0" maxOccurs="1" name="Directors" type="tns:ArrayOfDirector" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfBalanceSheet">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="BalanceSheet" nillable="true" type="tns:BalanceSheet" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="BalanceSheet">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Year" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Turnover" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TotalAssetsAmount" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfDirector">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Director" nillable="true" type="tns:Director" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Director">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Initials" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="LastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmployerName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SharePercentage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmploymentType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Occupation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OccupationLevel" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WorkTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WorkTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CurrentEmploymentStartDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AuthorisedSignatoryInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SignatoryType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BasicSalary" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BirthDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BirthCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Gender" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MaritalStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarriageType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarriageDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmailAddress" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResidentialStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EthnicGroup" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PhysicalAddressDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyPosition" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PhysicalAddress" type="tns:PhysicalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostalAddress" type="tns:PostalAddress" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankAccounts" type="tns:ArrayOfBankAccount" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfAccessory">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Accessory" nillable="true" type="tns:Accessory" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Accessory">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="CashInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Category" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CostGroup" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Price" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VATInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccessoryCode" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfProduct">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Product" nillable="true" type="tns:Product" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Product">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="CashInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CostGroup" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DeleteInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Price" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductOptionId" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfQuoteProduct">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="QuoteProduct" nillable="true" type="tns:QuoteProduct" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="QuoteProduct">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="ProductId" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CreatePolicyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreatePolicyResult" type="tns:CreatePolicyResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CreatePolicyResult">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:PolicyResult" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="PolicyResult">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="AccessoryStatusCode" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PolicyNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyStatusCode" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductStatusCode" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="QuoteProductStatusCode" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="response" type="tns:Response" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Response">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Errors" type="tns:ArrayOfInputError" />
+          <s:element minOccurs="0" maxOccurs="1" name="Message" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="StatusCode" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfInputError">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="InputError" nillable="true" type="tns:InputError" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="InputError">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FieldCategory" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FieldName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FieldStatusCode" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="StatusCode" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetPolicy">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="policyNumber" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPolicyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPolicyResult" type="tns:GetPolicyResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="GetPolicyResult">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="accessories" type="tns:ArrayOfAccessoryFull" />
+          <s:element minOccurs="0" maxOccurs="1" name="policy" type="tns:PolicyFull" />
+          <s:element minOccurs="0" maxOccurs="1" name="products" type="tns:ArrayOfProductFull" />
+          <s:element minOccurs="0" maxOccurs="1" name="response" type="tns:Response" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfAccessoryFull">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="AccessoryFull" nillable="true" type="tns:AccessoryFull" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="AccessoryFull">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="AccessoryId" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccessoryName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Amount" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CashInd" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CostGroup" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyAccessoryId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TotalAmount" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VATAmount" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccessoryCode" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PolicyFull">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="BranchCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BranchName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BranchSalesPersonName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CompanyConsentInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="CreateDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreateUserFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreateUserLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreateUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIUserFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIUserLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GroupCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GroupName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="MarketingConsentInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherCompanyConsentInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIAddress2" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PDPSIBirthDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSICity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSICountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIEmailAddress" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIFaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIFaxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIGender" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIHomeTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIHomeTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIIDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIIDType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIInitials" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSILastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIMobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIPostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIRelation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSISuburb" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSITitle" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIWorkTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PDPSIWorkTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PolicyNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SubmitDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="SubmitUserFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SubmitUserLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SubmitUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TransactionType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VechicleId" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleBodyNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleChassisNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCodeBodyStyle" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCodeCylinders" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCodeDoors" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCodeEngineCapacity" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCodeEnginePower" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCodeIntroductionDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCodeManufacturer" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCodeModel" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCodeTerminationDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCodeVehicleType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleColour" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCondition" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCost" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleDeliveryCost" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleDeliveryFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleDiscountAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleEngineNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleExistingPlanExpiryDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleExistingPlanExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleExistingPlanType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleExistingWarrantyExpiryDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleExistingWarrantyExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleExistingWarrantyInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleFirstRegistrationDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleGearlockInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleImmobiliserInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleInteriorTrim" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleManufacturerPlanExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleManufacturerPlanExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleManufacturerPlanType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleManufacturerWarrantyExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleManufacturerWarrantyExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleManufacturerWarrantyInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleNewUsed" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleOdometerReading" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleRegistrationCost" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleRegistrationFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleRegistrationNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleRetailPrice" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleSalesReferenceNumber" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleStockNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleTrackingDeviceInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleVINNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChassisVINNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="carAnnualDistance" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="carDealerDepositValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="carDeliveryDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="carDepositValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="carCashDeposit" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="carChequeDeposit" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="carEFTDeposit" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="carTradeInAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="carTradeInColour" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="carTradeInCurrentInstalment" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="carTradeInFinanceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="carTradeInFinanceCompanyName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="carTradeInInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="carTradeInMileage" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="carTradeInSettlementValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="carTradeInValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="carVehiclePurpose" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="clnBirthDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnCategory" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnCitizenshipCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnContactMethod" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnCorrespondenceLanguage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnEmailAddress" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnEthnicGroup" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnFaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnFaxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnGender" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="clnGraduateInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnHomeTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnHomeTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnIDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnIDType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="clnInfoMarketingConsentInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnInitials" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnMaritalStatus" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="clnMarriageDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnMarriageType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnMobileContractType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnMobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnNationalityCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPhysicalAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPhysicalAddress2" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="clnPhysicalAddressDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPhysicalCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPhysicalCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPhysicalCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPhysicalProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPhysicalSuburb" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPostalAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPostalAddress2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPostalCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPostalCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPostalCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPostalProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPostalSuburb" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreferredStatementMethod" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreviousAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreviousAddress2" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="clnPreviousAddressDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreviousCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreviousCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreviousCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreviousProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnPreviousSuburb" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnResidenceCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnResidentialStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnTaxNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="clnTaxRegisteredInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnTitle" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnWorkTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="clnWorkTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpAddress2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpPostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpRegistrationNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpSuburb" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="cmpVATNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="cmpVATVendorInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyDetails" type="tns:CompanyDetails" />
+          <s:element minOccurs="1" maxOccurs="1" name="docDICAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="docFinanceAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="docFinanceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="docFinanceCompanyName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="docInsuranceAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="docInsuranceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="docInsuranceCompanyName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="docInvoiceDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="docInvoiceNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="docInvoicePaidDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="docOtherCommissionAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="docOtherCostAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="docSightedInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvAddress2" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="drvBirthDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvEmailAddress" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvFaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvFaxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvGender" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvHomeTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvHomeTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvIDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvIDType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvInitials" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvMobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvPostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvRelation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvSuburb" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvTitle" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvWorkTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="drvWorkTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empAddress2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empCountry" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="empCurrentEmploymentStartDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="empEmployeeNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empEmployerName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empEmploymentType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empIndustry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empOccupation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousAddress2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousEmployerName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empIndustrySector" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="empPreviousEmploymentStartDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousPostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="empPreviousSuburb" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="empProfessionalInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="empProvince" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="empSalaryDay" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="empSuburb" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finAdminOrderInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finAdvancePaymentInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="finAgreementType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finBasicSalary" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finBondRentPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="finBondholder" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finBondholderBank" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finCarAllowance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finChildMaintenance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finClothingAccounts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finCoDebtorInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finCommission" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finCreditCardRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="finDebitOrderBankAccountBank" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finDebitOrderBankAccountBranchCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finDebitOrderBankAccountBranchName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finDebitOrderBankAccountCreditCardType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finDebitOrderBankAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finDebitOrderBankAccountType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finDebitOrderBankAccountholderName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finDebtReviewInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finEducationFees" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finEffectiveDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="finFirstPaymentExtendInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finFoodEntertainmentCosts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="finFundsSource" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finFurnitureAccounts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finGuarantorApplicationInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finGuarantorInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finHouseBondBalance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finHouseCurrentValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finHousePurchaseDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="finHousePurchasePrice" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finHouseholdExpenses" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finInsolventInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finInsurancePayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="finInterestRateType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finLoanRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finMunicipalPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finOtherIncome" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="finOtherIncomeSource" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finOtherPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finOverdraftRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finPaymentDay" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="finShockAbsorberInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="finPaymentFrequency" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finPaymentMethod" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finPayslipNettSalary" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finPreferredInterestRate" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finResidualPercentage" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finResidualValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finSBVAFAccessFinanceInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finSequestrationOrderInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="finSignatureAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finSignatureAddress2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finSignatureCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finSignatureCountry" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finSignatureDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="finSignaturePostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finSignatureProvince" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="finSignatureSuburb" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="finSuretyInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="finTaxPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finTelephonePayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="finTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="finTransportCosts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="insCardLicenceInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="insDriversLicenceDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="insDriversLicenceType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="insLastClaimYears" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="insParkedAtNight" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="insParkedDuringDay" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="insPreviousInsuranceInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="pdtDebitOrderBankAccountBank" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="pdtDebitOrderBankAccountBranchCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="pdtDebitOrderBankAccountBranchName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="pdtDebitOrderBankAccountCreditCardType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="pdtDebitOrderBankAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="pdtDebitOrderBankAccountType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="pdtDebitOrderBankAccountholderName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="relFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="relLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="relMobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="relRelation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsAddress1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsAddress2" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsBirthDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsBondRentPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsCarAllowance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsChildMaintenance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsCity" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsClothingAccounts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsCommission" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsCountry" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsCreditCardRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsEducationFees" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsEmailAddress" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsEmployerName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsEmploymentStartDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsEmploymentType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsFaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsFaxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsFirstName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsFoodEntertainmentCosts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsFurnitureAccounts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsGender" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsHomeTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsHomeTelephoneNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsHouseholdExpenses" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsIDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsIDType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsInitials" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsInsurancePayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsLastName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsLoanRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsMobileNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsMonthlySalary" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsMunicipalPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsOccupation" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsOtherIncome" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsOtherIncomeSource" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsOtherPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsOverdraftRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsPostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsProvince" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsSalaryDay" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsSuburb" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsTaxPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsTelephonePayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsTitle" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="spsTransportCosts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsWorkTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="spsWorkTelephoneNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="IDXConsentInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="IVXConsentInd" type="s:boolean" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfProductFull">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="ProductFull" nillable="true" type="tns:ProductFull" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ProductFull">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="AdminFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="Amount" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CashInd" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="CollectionAgent" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CollectionFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CommissionAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CostGroup" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstDebitAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstDebitDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="GAPCoverAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="GAPTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="InspectionFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTHAdditionalKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNAdditionalMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="OptionCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OptionName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PDPCoverAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PDPSecondInsuredInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="PDPTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PayoverAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PayoverTotalAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PayoverVATAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyProductOptionId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductId" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductOptionId" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductTypeCategory" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="RecurringDebitDay" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReferenceNo" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TotalAmount" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VATAmount" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARAdditionalKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARAdditionalMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="AdministratorCompanyName" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetPolicyDetails">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="PolicyNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="BranchCode" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="IncludeProducts" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPolicyDetailsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPolicyDetailsResult" type="tns:GetPolicyDetailsResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="GetPolicyDetailsResult">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Policy" type="tns:PolicyDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="Response" type="tns:Response" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PolicyDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Accessories" type="tns:ArrayOfAccessoryDetail" />
+          <s:element minOccurs="1" maxOccurs="1" name="AdvancePaymentInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="AgreementType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankAccounts" type="tns:ArrayOfBankAccountDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="BodyNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BodyStyle" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BranchCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BranchName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CarDeliveryDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="CashInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Category" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChassisNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Client" type="tns:PersonDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="Colour" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyAddress" type="tns:PhysicalAddressDetail" />
+          <s:element minOccurs="1" maxOccurs="1" name="CompanyConsentInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyRegistrationNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyTradingAsName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyVATNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CompanyVATVendorInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CreateDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreateFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreateLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreateUserName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CreditRehabilitationInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="Cylinders" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="DICAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="DealerDepositValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="DepositValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CashDepositValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="ChequeDepositValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="EFTDepositValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="DiscountAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="Doors" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Driver" type="tns:PersonDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="DriverRelation" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="EngineCapacity" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="EngineNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="EnginePower" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ExistingPlanExpiryDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="ExistingPlanExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ExistingPlanType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ExistingWarrantyExpiryDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="ExistingWarrantyExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ExistingWarrantyInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ExpectedAnnualMileage" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ExtremeVehicleUsageInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FILastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FIUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceApplications" type="tns:ArrayOfFinanceApplicationDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceCompanyName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FinanceInitiationFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="FinanceRate" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceRateType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FinanceSchemeDealInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="FinanceStatus" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FinanceTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstPaymentExtendedInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstRegistrationDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FleetAssist" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="FullServiceHistoryInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GearlockInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="GroupCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GroupName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HPIReferenceNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ImmobiliserInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceAccountNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceArrangedBy" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceBrokerCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceBrokerCompanyName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsuranceCardLicenceInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsuranceCommission" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceCompanyName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsuranceDeclineMotorComprehensiveQuoteInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsuranceDriversLicenceDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceDriversLicenceType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsuranceLastClaimYears" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceParkedAtNight" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="InsuranceParkedDuringDay" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsurancePremium" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsurancePreviousInsuranceInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="InteriorTrim" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="IntroductionDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="InvoiceDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="InvoiceNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="InvoicePaidDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Manufacturer" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ManufacturerApprovedUsedInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ManufacturerDerivativeCode" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="MarkDown" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="MarketingConsentInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarketingSource" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarketingSourceDetail" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Model" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NewUsed" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="OdometerReading" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="OffRoadUsagePercentage" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherCommissionAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherCompanyConsetId" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherCostAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherExpenses" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherIncome" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OverAllowance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PaymentDay" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentFrequency" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentMethod" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PlanExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PlanExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PlanType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PolicyNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PreArrangedFinanceInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PreDeliveryCost" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="Products" type="tns:ArrayOfProductDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="FullProductList" type="tns:ArrayOfFullProduct" />
+          <s:element minOccurs="0" maxOccurs="1" name="FullProductOptionList" type="tns:ArrayOfFullProductOption" />
+          <s:element minOccurs="1" maxOccurs="1" name="Rebate" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="Reconditioning" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="RegistrationNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Relative" type="tns:PersonDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="RelativeRelation" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ResidualPercentage" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="ResidualValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="RetailPrice" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesOTPNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesPerson" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesQuoteNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SecondInsured" type="tns:PersonDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="SecondInsuredRelation" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SightedDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="SightedFirstName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SightedInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="SightedLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SightedUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Spouse" type="tns:PersonDetail" />
+          <s:element minOccurs="1" maxOccurs="1" name="StockDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="StockNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SubmitDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="SubmitFirstName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SubmitLastName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SubmitUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TakeABreakMonth" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TaxiConversionCertificateIssueDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxiConversionCertificateNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TerminationDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="TrackingDeviceInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInAccountNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TradeInCashInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TradeInCashPaybackValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="TradeInCurrentInstallment" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInFinanceCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TradeInFinanceCompanyName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TradeInInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TradeInSettlementValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="TradeInValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="TransactionStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TransactionType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VINNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChassisVINNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleCode" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleCost" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleDescription" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleSource" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VehicleUse" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="RegistrationLicenceDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarrantyCommencementDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarrantyExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarrantyExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarrantyInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="EstablishmentCountry" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CompanyEstablishedDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="IDXConsentInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="IVXConsentInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyDetails" type="tns:CompanyDetails" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfAccessoryDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="AccessoryDetail" nillable="true" type="tns:AccessoryDetail" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="AccessoryDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="AccessoryCode" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="AccessoryId" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CashInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Category" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CostGroup" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="MMAccessoryInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyAccessoryId" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="Price" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TotalPrice" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VATPrice" nillable="true" type="s:decimal" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfBankAccountDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="BankAccountDetail" nillable="true" type="tns:BankAccountDetail" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="BankAccountDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="AccountHolderName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccountNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="AccountOpenDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="AccountType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankBranchCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankBranchName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BankName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CreditCardType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FinanceDebitOrderInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PrimaryAccountInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductDebitOrderInd" nillable="true" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PersonDetail">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="AdminOrderInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="BasicSalary" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="BirthDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="BondHolder" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BondHolderBank" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BondHolderBankCode" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="BondRentPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CarAllowance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="ChildMaintenance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="CitizenshipCountry" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ClothingAccountPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CoDebtorInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="Commission" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="ContactMethod" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CorrespondenceLanguage" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CreditCardPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CreditDisputeInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CurrentEmploymentStartDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="DebtRearrangementInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="DebtReviewInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="EducationCosts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="EducationLevel" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmailAddress" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmployeeNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmployerName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmploymentAddress" type="tns:PhysicalAddressDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmploymentType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EthnicGroup" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FaxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FirstName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FoodEntertainmentCosts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="FundsSource" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FurnitureAccountPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="GarnisheeOrderInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Gender" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="GraduateInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GuarantorInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeLanguage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HomeTelephoneNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="HouseBondBalance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="HouseCurrentValue" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="HouseHoldExpenses" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="HousePurchaseDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="HousePurchasePrice" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IDType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Industry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Initials" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsolventInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsurancePayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="LastName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="LoanRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="MaritalStatus" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="MarriageDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="MarriageType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MobileContractType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MobileNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="MunicipalPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="NationalityCountry" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="NettSalary" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="Occupation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OccupationLevel" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherAllowance" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherIncome" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherIncomeSource" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="OtherPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OverTime" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OverdraftPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PassportExpiryDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="PassportIssueDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="PersalInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PhysicalAddress" type="tns:PhysicalAddressDetail" />
+          <s:element minOccurs="1" maxOccurs="1" name="PhysicalAddressDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostalAddress" type="tns:PostalAddressDetail" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreferredName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreferredStatementMethod" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousEmployerName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousEmploymentAddress" type="tns:PhysicalAddressDetail" />
+          <s:element minOccurs="1" maxOccurs="1" name="PreviousEmploymentStartDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="PreviousPhysicalAddress" type="tns:PhysicalAddressDetail" />
+          <s:element minOccurs="1" maxOccurs="1" name="PreviousPhysicalAddressDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProfessionalInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PublicDriverPermitInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="Reimbursement" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResidenceCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResidentialStatus" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SalaryDay" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SequestrationOrderInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="SuretyAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="SuretyInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TaxPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="TaxRegisteredInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TelephonePayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TransportCosts" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VehicleRepayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="WorkTelephoneCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="WorkTelephoneNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="BirthCountry" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MedicalAidNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MedicalAidScheme" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactName1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactName2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactNumber1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="EmergencyContactNumber2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Allergies" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MedicalConditions" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CurrentChronicMedication" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AllowMobileContactInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AllowSMSContactInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AllowEmailContactInd" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DriversLicenceDate" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="RentalIncome" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="MaintenanceIncome" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="LoanDeductions" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="SecurityPayments" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="OtherPaymentsDescription" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SettledDebt" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="AlternativeMobileNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="VatNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="BondLiabilityPercentage" nillable="true" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="IndustrySector" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PhysicalAddressDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Address1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Address2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="City" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Country" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Province" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Suburb" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PostalAddressDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Address1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Address2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AddressType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="City" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Country" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="POBoxNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PostNetSuiteNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PrivateBagNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Province" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Suburb" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfFinanceApplicationDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="FinanceApplicationDetail" nillable="true" type="tns:FinanceApplicationDetail" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="FinanceApplicationDetail">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="AppliedToInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CompanyName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="LatestApplicationDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="LatestApplicationStatus" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfProductDetail">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="ProductDetail" nillable="true" type="tns:ProductDetail" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ProductDetail">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="AdminFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="Amount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="BulkedInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CashInd" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="CollectionAgent" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CollectionFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CommissionAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="CostGroup" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstDebitAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstDebitDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="GAPCoverAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="GAPTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="InspectionFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNAdditionalKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNAdditionalMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNCommencementDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNCommencementKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNExpiryKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MTNExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="OptionCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OptionName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PDPCoverAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PDPSecondInsuredInd" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PDPTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PayoverAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PayoverTotalAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PayoverVATAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyFee" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyProductOptionId" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductId" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductOptionId" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductTypeCategoryCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductTypeCategoryName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductTypeCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductTypeName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="RecurringDebitDay" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReferenceNumber" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SHDTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TRKFitmentCentre" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SHDFitmentCentre" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TRKMonthlyPrice" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="TotalAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="VATAmount" nillable="true" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARAdditionalKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARAdditionalMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARCommencementDate" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARCommencementKilometres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARExpiryKilomtres" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WARExpiryMonths" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TRKTerm" nillable="true" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="AdministratorCompanyName" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfFullProduct">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="FullProduct" nillable="true" type="tns:FullProduct" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="FullProduct">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="ProductId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductLineId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="DefaultPayByCashInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="TrkDebitOrderAuthorisationInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="InsuranceInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyProductId" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="OfferStatus" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstDebitDate" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="FirstDebitAmount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="RecurringDebitDay" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="CollectionAgent" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductTypeName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductTypeCategoryId" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="PaymentType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SuggestedPriceInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="CoverAmount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="CostGroupDefault" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="DisplayType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductTypeCategorySortKey" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductTypeCategoryName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductHeaderNote" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ProductFooterNote" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReferenceNo" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FitmentCentre" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CostGroup" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CashInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="DisqualifiedInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="BulkingInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="BulkingAllowedInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="AdministratorCompanyId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="OwnerCompanyId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="EditableFirstDebitAmountInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="QuoteStartDate" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="QuoteEndDate" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="SuspiciousPlanInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="AvailableInd" type="s:boolean" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfFullProductOption">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="FullProductOption" nillable="true" type="tns:FullProductOption" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="FullProductOption">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="PolicyProductOptionId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductId" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ProductOptionId" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="OptionCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OptionName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OptionType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Amount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="AmountInclVAT" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="VATAmount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="VATPercentage" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="RetailAmount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="InstallmentAmount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="GapTerm" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GapCoverAmount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="GapMaxCoverAmont" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="MtnExpiryMonths" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MtnExpiryKilometres" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MtnAdditionalMonths" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="MtnAdditionalKilometres" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PdpTerm" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="PdpCoverAmount" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="PdpSecondInsuredInd" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="PdpInsuredPerson" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PdpInsuredBirthDate" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="PdpInsuredGender" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TrkMonthlySubscription" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarAdditionalMonths" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarAdditionalKilometres" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarExpiryMonths" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarExpiryKilometres" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WarCoverAmount" type="s:double" />
+          <s:element minOccurs="0" maxOccurs="1" name="Note" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SuggestedPriceInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="SelectInd" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="DefaultFirstDebitAmount" type="s:double" />
+          <s:element minOccurs="0" maxOccurs="1" name="TransactionFinanceCondition" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ShdTerm" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TrkTerm" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetPolicyNumber">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="salesReferenceNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="salesCompanyCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="branchCode" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPolicyNumberResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPolicyNumberResult" type="tns:GetPolicyNumberResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="GetPolicyNumberResult">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="policyNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="response" type="tns:Response" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetPolicyStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="policyNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="salesReferenceNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="salesCompanyCode" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPolicyStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPolicyStatusResult" type="tns:GetPolicyStatusResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="GetPolicyStatusResult">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="response" type="tns:Response" />
+          <s:element minOccurs="0" maxOccurs="1" name="status" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetPolicyStatusList">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="salesCompanyCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="branchCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="startDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="listType" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPolicyStatusListResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPolicyStatusListResult" type="tns:GetPolicyStatusListResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="GetPolicyStatusListResult">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Response" type="tns:Response" />
+          <s:element minOccurs="0" maxOccurs="1" name="status" type="tns:ArrayOfPolicyStatus" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfPolicyStatus">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="PolicyStatus" nillable="true" type="tns:PolicyStatus" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="PolicyStatus">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="BranchCode" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CreateDate" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="LastAccessDate" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="PolicyNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesCompanyCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Status" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SubmitDate" type="s:dateTime" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="SubmitDocuments">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="SalesReferenceNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="BranchCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PolicyNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Documents" type="tns:ArrayOfDocument" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfDocument">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Document" nillable="true" type="tns:Document" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Document">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Base64EncodedDocument" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DocumentCategory" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DocumentDescription" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DocumentGUID" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FileExtension" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SignInd" type="s:boolean" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="SubmitDocumentsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SubmitDocumentsResult" type="tns:Response" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdatePolicy">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Credentials" type="tns:Credentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="Policy" type="tns:Policy" />
+            <s:element minOccurs="0" maxOccurs="1" name="Accessories" type="tns:ArrayOfAccessory" />
+            <s:element minOccurs="0" maxOccurs="1" name="Products" type="tns:ArrayOfProduct" />
+            <s:element minOccurs="0" maxOccurs="1" name="QuoteProducts" type="tns:ArrayOfQuoteProduct" />
+            <s:element minOccurs="1" maxOccurs="1" name="IsAutomaticUpdate" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdatePolicyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UpdatePolicyResult" type="tns:UpdatePolicyResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="UpdatePolicyResult">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:PolicyResult" />
+        </s:complexContent>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="CreatePolicySoapIn">
+    <wsdl:part name="parameters" element="tns:CreatePolicy" />
+  </wsdl:message>
+  <wsdl:message name="CreatePolicySoapOut">
+    <wsdl:part name="parameters" element="tns:CreatePolicyResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicySoapIn">
+    <wsdl:part name="parameters" element="tns:GetPolicy" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicySoapOut">
+    <wsdl:part name="parameters" element="tns:GetPolicyResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyDetailsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPolicyDetails" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyDetailsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPolicyDetailsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyNumberSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPolicyNumber" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyNumberSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPolicyNumberResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPolicyStatus" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPolicyStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyStatusListSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPolicyStatusList" />
+  </wsdl:message>
+  <wsdl:message name="GetPolicyStatusListSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPolicyStatusListResponse" />
+  </wsdl:message>
+  <wsdl:message name="SubmitDocumentsSoapIn">
+    <wsdl:part name="parameters" element="tns:SubmitDocuments" />
+  </wsdl:message>
+  <wsdl:message name="SubmitDocumentsSoapOut">
+    <wsdl:part name="parameters" element="tns:SubmitDocumentsResponse" />
+  </wsdl:message>
+  <wsdl:message name="UpdatePolicySoapIn">
+    <wsdl:part name="parameters" element="tns:UpdatePolicy" />
+  </wsdl:message>
+  <wsdl:message name="UpdatePolicySoapOut">
+    <wsdl:part name="parameters" element="tns:UpdatePolicyResponse" />
+  </wsdl:message>
+  <wsdl:portType name="PolicyServicesV300Soap">
+    <wsdl:operation name="CreatePolicy">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Create a policy and return its PolicyNumber</wsdl:documentation>
+      <wsdl:input message="tns:CreatePolicySoapIn" />
+      <wsdl:output message="tns:CreatePolicySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicy">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">GetPolicy has been marked Obsolete in preparation for its removal. Use the replacement method GetPolicyDetails instead.</wsdl:documentation>
+      <wsdl:input message="tns:GetPolicySoapIn" />
+      <wsdl:output message="tns:GetPolicySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyDetails">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Use as a replacement for GetPolicy. Returns the full policy, accessory and product details.</wsdl:documentation>
+      <wsdl:input message="tns:GetPolicyDetailsSoapIn" />
+      <wsdl:output message="tns:GetPolicyDetailsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyNumber">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Return the PolicyNumber</wsdl:documentation>
+      <wsdl:input message="tns:GetPolicyNumberSoapIn" />
+      <wsdl:output message="tns:GetPolicyNumberSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyStatus">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Return the policy's status</wsdl:documentation>
+      <wsdl:input message="tns:GetPolicyStatusSoapIn" />
+      <wsdl:output message="tns:GetPolicyStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyStatusList">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Return a list of policies created or edited after a certain date and time.</wsdl:documentation>
+      <wsdl:input message="tns:GetPolicyStatusListSoapIn" />
+      <wsdl:output message="tns:GetPolicyStatusListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SubmitDocuments">
+      <wsdl:input message="tns:SubmitDocumentsSoapIn" />
+      <wsdl:output message="tns:SubmitDocumentsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdatePolicy">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Update a policy and return its PolicyNumber</wsdl:documentation>
+      <wsdl:input message="tns:UpdatePolicySoapIn" />
+      <wsdl:output message="tns:UpdatePolicySoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="PolicyServicesV300HttpGet" />
+  <wsdl:portType name="PolicyServicesV300HttpPost" />
+  <wsdl:binding name="PolicyServicesV300Soap" type="tns:PolicyServicesV300Soap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CreatePolicy">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/CreatePolicy" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicy">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicy" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyDetails">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyDetails" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyNumber">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyNumber" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyStatus">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyStatusList">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyStatusList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SubmitDocuments">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/SubmitDocuments" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdatePolicy">
+      <soap:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/UpdatePolicy" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PolicyServicesV300Soap12" type="tns:PolicyServicesV300Soap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CreatePolicy">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/CreatePolicy" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicy">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicy" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyDetails">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyDetails" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyNumber">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyNumber" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyStatus">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPolicyStatusList">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/GetPolicyStatusList" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SubmitDocuments">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/SubmitDocuments" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdatePolicy">
+      <soap12:operation soapAction="http://ws.edith.co.za/EdithServices/PolicyServicesV300/UpdatePolicy" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PolicyServicesV300HttpGet" type="tns:PolicyServicesV300HttpGet">
+    <http:binding verb="GET" />
+  </wsdl:binding>
+  <wsdl:binding name="PolicyServicesV300HttpPost" type="tns:PolicyServicesV300HttpPost">
+    <http:binding verb="POST" />
+  </wsdl:binding>
+  <wsdl:service name="PolicyServicesV300">
+    <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">A web service for adding and retrieving policies.</wsdl:documentation>
+    <wsdl:port name="PolicyServicesV300Soap" binding="tns:PolicyServicesV300Soap">
+      <soap:address location="https://www.seritisolutions.co.za/demows/PolicyServicesV300.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PolicyServicesV300Soap12" binding="tns:PolicyServicesV300Soap12">
+      <soap12:address location="https://www.seritisolutions.co.za/demows/PolicyServicesV300.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PolicyServicesV300HttpGet" binding="tns:PolicyServicesV300HttpGet">
+      <http:address location="https://www.seritisolutions.co.za/demows/PolicyServicesV300.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PolicyServicesV300HttpPost" binding="tns:PolicyServicesV300HttpPost">
+      <http:address location="https://www.seritisolutions.co.za/demows/PolicyServicesV300.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

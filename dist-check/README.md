@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "efficient-finance-widget" generated at 2026-06-14T11:57:23.822Z.

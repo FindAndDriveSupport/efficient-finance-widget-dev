@@ -1,0 +1,19 @@
+{
+  "name": "efficient-finance-widget-worker",
+  "version": "1.0.0",
+  "description": "E-fficient Finance Widget — Cloudflare Worker backend",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --env development",
+    "deploy": "wrangler deploy",
+    "deploy:prod": "wrangler deploy --env production",
+    "tail": "wrangler tail",
+    "lint": "eslint src workers --ext .js",
+    "kv:create": "wrangler kv:namespace create SERITI_CACHE",
+    "secrets:set": "node scripts/set-secrets.js"
+  },
+  "devDependencies": {
+    "wrangler": "^3.60.0",
+    "eslint": "^8.57.0"
+  }
+}
