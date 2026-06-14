@@ -9,7 +9,7 @@ binding  = "SERITI_CACHE"
 id       = "16c7bf807bc0445ab0420a16f2352c0d"
 
 [vars]
-WORKER_ENV = "production"
+WORKER_ENV = "development"
 
 [observability.logs]
 enabled = true
