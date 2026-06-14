@@ -1,5 +1,5 @@
-# wrangler.toml — E-fficient Finance Widget — Cloudflare Worker config
-name        = "efficient-finance-widget"
+# wrangler.toml — E-fficient Finance Widget Dev — Cloudflare Worker config
+name        = "efficient-finance-widget-dev"
 main        = "workers/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
