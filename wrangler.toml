@@ -1,12 +1,8 @@
-# wrangler.toml — E-fficient Finance Widget Dev — Cloudflare Worker config
+# wrangler.toml — E-fficient Finance Widget Dev
 name        = "efficient-finance-widget-dev"
 main        = "workers/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-
-[[kv_namespaces]]
-binding  = "SERITI_CACHE"
-id       = "16c7bf807bc0445ab0420a16f2352c0d"
 
 [vars]
 WORKER_ENV = "development"
@@ -15,14 +11,17 @@ WORKER_ENV = "development"
 enabled = true
 invocation_logs = true
 
-
-[[d1_databases]]
-binding = "DB"
-database_name = "postal-codes-db"
-database_id = "a518623c-f74b-4889-98da-d9ddda0ff632"
-
 [env.development]
 name = "efficient-finance-widget-dev"
 
 [env.development.vars]
 WORKER_ENV = "development"
+
+[[env.development.kv_namespaces]]
+binding  = "SERITI_CACHE"
+id       = "16c7bf807bc0445ab0420a16f2352c0d"
+
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "postal-codes-db"
+database_id = "a518623c-f74b-4889-98da-d9ddda0ff632"
