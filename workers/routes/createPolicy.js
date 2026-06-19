@@ -9,8 +9,6 @@
 
 import { STATUS_CODES, SYSTEM_MESSAGES, FIELD_ERRORS, parseEdithErrors } from '../utils/edithErrors.js';
 
-const EDITH_WSDL_DEFAULT = 'https://www.seritisolutions.co.za/demows/PolicyServicesV300.asmx';
-
 // YONDA Service Fee — defaults applied for financeType === 'bike'
 const YONDA_SERVICE_FEE = {
   productOptionId: '9845',
@@ -18,16 +16,23 @@ const YONDA_SERVICE_FEE = {
 };
 
 export async function handleCreatePolicy(request, ctx, jsonResponse) {
-  const { env, dealerConfig, origin } = ctx;
+  const { env, dealerConfig, origin, ctx: workerCtx } = ctx;
 
   let body;
   try { body = await request.json(); }
   catch { return jsonResponse({ error: 'Invalid JSON body' }, 400, origin, env); }
 
+  // Select Edith credentials and WSDL URL based on dealer's edithEnv
+  const isProd = dealerConfig.edithEnv === 'prod';
+  const companyCode = isProd ? env.EDITH_COMPANY_CODE_PROD : env.EDITH_COMPANY_CODE;
+  const companyPass = isProd ? env.EDITH_COMPANY_PASS_PROD : env.EDITH_COMPANY_PASS;
+  const wsdlUrl = isProd ? env.EDITH_WSDL_URL_PROD : env.EDITH_WSDL_URL;
+  console.error('EDITH_WSDL_URL: ' + wsdlUrl + ' | isProd: ' + isProd);
+
   // Build Edith XML payload
   const salesRef = generateSalesRef(dealerConfig.branchCode);
   console.error("EDITH_PAYLOAD: " + JSON.stringify(body));
-  const xml = buildEdithXML(body, env, dealerConfig, salesRef);
+  const xml = buildEdithXML(body, companyCode, companyPass, dealerConfig, salesRef);
   console.error("EDITH_XML: " + xml);
 
   console.log(JSON.stringify({
@@ -36,14 +41,13 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
     salesRef,
     dealerKey: dealerConfig.key,
     branchCode: dealerConfig.branchCode,
-    payload: body,
-    xml,
+    edithEnv: dealerConfig.edithEnv || 'dev',
     ts: new Date().toISOString(),
   }));
 
   let edithResponse;
   try {
-    const res = await fetch(EDITH_WSDL_DEFAULT, {
+    const res = await fetch(wsdlUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'text/xml; charset=utf-8',
@@ -110,20 +114,40 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
     }, 200, origin, env);
   }
 
-  // Clean success
+  // Clean success — store policy event in D1 and return
+  const policyNumber = edithResponse.policyNumber;
+
+  // Write to D1 in background (non-blocking)
+  if (env.DB && policyNumber && workerCtx) {
+    workerCtx.waitUntil(
+      env.DB.prepare(`
+        INSERT INTO policy_events (dealer_key, policy_number, applicant_id, sales_ref, branch_code, finance_type)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `)
+      .bind(
+        dealerConfig.key,
+        policyNumber,
+        body.applicantId || null,
+        salesRef,
+        dealerConfig.branchCode,
+        dealerConfig.financeType || 'vehicle',
+      )
+      .run()
+      .catch(err => console.error('D1 write failed:', err.message))
+    );
+  }
+
   return jsonResponse({
     success: true,
-    policyNumber: edithResponse.policyNumber,
+    policyNumber,
     salesRef,
     code: 100,
   }, 200, origin, env);
 }
 
 // ── Edith XML Builder ─────────────────────────────────────────
-// Maps app form fields → Edith CreatePolicy SOAP request
-// Reference: edith-createpolicy-data-mapping.html
 
-function buildEdithXML(data, env, dealer, salesRef) {
+function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
   const d = data;
   const isBike = dealer.financeType === 'bike';
 
@@ -133,8 +157,9 @@ function buildEdithXML(data, env, dealer, salesRef) {
           <tem:BankAccount>
             ${d.bankAccountNumber ? `<tem:AccountNumber>${esc(d.bankAccountNumber)}</tem:AccountNumber>` : ''}
             ${d.accountType      ? `<tem:AccountType>${esc(d.accountType.toUpperCase())}</tem:AccountType>` : ''}
+            <tem:AccountHolderName>${esc((d.firstName || "") + " " + (d.lastName || ""))}</tem:AccountHolderName>
             <tem:BankBranchCode>${esc(d.bankBranchCode)}</tem:BankBranchCode>
-            <tem:PrimaryAccountInd>true</tem:PrimaryAccountInd>
+            <tem:PrimaryAccountInd>-1</tem:PrimaryAccountInd>
           </tem:BankAccount>
         </tem:BankAccounts>` : '';
 
@@ -153,20 +178,33 @@ function buildEdithXML(data, env, dealer, salesRef) {
   <soap:Body>
     <tem:CreatePolicy>
       <tem:Credentials>
-        <tem:CompanyCode>${env.EDITH_COMPANY_CODE}</tem:CompanyCode>
-        <tem:CompanyPassword>${env.EDITH_COMPANY_PASS}</tem:CompanyPassword>
+        <tem:CompanyCode>${companyCode}</tem:CompanyCode>
+        <tem:CompanyPassword>${companyPass}</tem:CompanyPassword>
       </tem:Credentials>
       <tem:Policy>
         <tem:BranchCode>${dealer.branchCode}</tem:BranchCode>
         <tem:SalesReferenceNumber>${salesRef}</tem:SalesReferenceNumber>
-        <tem:TransactionType>${isBike ? 'MOTORBIKE SALE' : 'VEHICLE SALE'}</tem:TransactionType>
+        <tem:TransactionType>VEHICLE SALE</tem:TransactionType>
         <tem:Category>PRIVATE</tem:Category>${bankAccountsXml}
         ${d.vehicleMake    ? `<tem:Manufacturer>${esc(d.vehicleMake)}</tem:Manufacturer>` : ''}
         ${d.vehicleModel   ? `<tem:Model>${esc(d.vehicleModel)}</tem:Model>` : ''}
         ${d.vehicleMm      ? `<tem:VehicleCode>${esc(d.vehicleMm)}</tem:VehicleCode>` : ''}
         ${(d.vehicleMake || d.vehicleModel) ? `<tem:VehicleDescription>${esc([d.vehicleMake, d.vehicleModel].filter(Boolean).join(' '))}</tem:VehicleDescription>` : ''}
-        ${d.estimatedApprovalAmount ? `<tem:RetailPrice>${d.estimatedApprovalAmount}</tem:RetailPrice>` : ''}
+        ${d.estimatedApprovalAmount ? `<tem:RetailPrice>${d.estimatedApprovalAmount}</tem:RetailPrice>` : d.preQualTotal ? `<tem:RetailPrice>${d.preQualTotal}</tem:RetailPrice>` : ''}
         <tem:NewUsed>USED</tem:NewUsed>
+        ${d.spouseFirstName && d.maritalStatus?.toUpperCase() === 'MARRIED' ? `
+        <tem:Spouse>
+          ${d.spouseFirstName ? `<tem:FirstName>${esc(d.spouseFirstName)}</tem:FirstName>` : ''}
+          ${d.spouseLastName  ? `<tem:LastName>${esc(d.spouseLastName)}</tem:LastName>` : ''}
+          ${d.spouseIdNumber  ? `<tem:IDNumber>${esc(d.spouseIdNumber)}</tem:IDNumber>` : ''}
+        </tem:Spouse>` : ''}
+        ${d.nextOfKinFirstName ? `
+        <tem:RelativeRelation>DISTANT</tem:RelativeRelation>
+        <tem:Relative>
+          ${d.nextOfKinFirstName ? `<tem:FirstName>${esc(d.nextOfKinFirstName)}</tem:FirstName>` : ''}
+          ${d.nextOfKinLastName  ? `<tem:LastName>${esc(d.nextOfKinLastName)}</tem:LastName>` : ''}
+          ${d.nextOfKinMobile    ? `<tem:MobileNumber>${esc(d.nextOfKinMobile)}</tem:MobileNumber>` : ''}
+        </tem:Relative>` : ''}
        <tem:Client>
           ${d.title         ? `<tem:Title>${esc(d.title.toUpperCase())}</tem:Title>` : ''}
           ${d.firstName     ? `<tem:FirstName>${esc(d.firstName)}</tem:FirstName>` : ''}
@@ -174,7 +212,8 @@ function buildEdithXML(data, env, dealer, salesRef) {
           ${d.mobileNumber  ? `<tem:MobileNumber>${d.mobileNumber}</tem:MobileNumber>` : ''}
           ${d.emailAddress  ? `<tem:EmailAddress>${esc(d.emailAddress)}</tem:EmailAddress>` : ''}
           ${d.idNumber      ? `<tem:IDType>${esc(d.idType || 'RSA ID')}</tem:IDType><tem:IDNumber>${d.idNumber}</tem:IDNumber>` : '<tem:IDType>FOREIGN NATIONAL</tem:IDType>'}
-          ${d.gender ? `<tem:Gender>${esc(d.gender.toUpperCase())}</tem:Gender>` : ''}
+          ${d.gender        ? `<tem:Gender>${esc(d.gender.toUpperCase())}</tem:Gender>` : ''}
+          ${d.educationLevel ? `<tem:EducationLevel>${esc(d.educationLevel)}</tem:EducationLevel>` : ''}
           ${d.maritalStatus ? `<tem:MaritalStatus>${esc(d.maritalStatus)}</tem:MaritalStatus>` : ''}
           ${d.address1 ? `
           <tem:PhysicalAddress>
@@ -186,13 +225,6 @@ function buildEdithXML(data, env, dealer, salesRef) {
           </tem:PhysicalAddress>
           ${d.residentialStatus    ? `<tem:ResidentialStatus>${esc(d.residentialStatus)}</tem:ResidentialStatus>` : ''}
           ${d.physicalAddressDate  ? `<tem:PhysicalAddressDate>${esc(d.physicalAddressDate)}</tem:PhysicalAddressDate>` : ''}` : ''}
-          ${d.nextOfKinFirstName ? `
-          <tem:Relative>
-            <tem:RelativeRelation>DISTANT</tem:RelativeRelation>
-              <tem:RelativeFirstName>${esc(d.nextOfKinFirstName)}</tem:RelativeFirstName>
-              <tem:RelativeLastName>${esc(d.nextOfKinLastName || '')}</tem:RelativeLastName>
-              <tem:RelativeMobileNumber>${d.nextOfKinMobile || ''}</tem:RelativeMobileNumber>
-          </tem:Relative>` : ''}
           ${d.employmentType ? `<tem:EmploymentType>${esc(d.employmentType)}</tem:EmploymentType>` : ''}
           ${d.employerName   ? `<tem:EmployerName>${esc(d.employerName)}</tem:EmployerName>` : ''}
           ${d.occupation     ? `<tem:Occupation>${esc(d.occupation)}</tem:Occupation>` : ''}
@@ -205,18 +237,18 @@ function buildEdithXML(data, env, dealer, salesRef) {
           ${d.bureauExpenses ? `<tem:LoanRepayments>${Number(d.bureauExpenses).toFixed(2)}</tem:LoanRepayments>` : ''}
           <tem:FundsSource>SALARY</tem:FundsSource>
           <tem:FinanceApplication>
-            <tem:CompanyCode>${env.EDITH_COMPANY_CODE}</tem:CompanyCode>
+            <tem:CompanyCode>${companyCode}</tem:CompanyCode>
             ${d.depositAmount ? `<tem:DepositValue>${Number(d.depositAmount).toFixed(2)}</tem:DepositValue>` : ''}
             <tem:AgreementType>INSTALMENT SALE</tem:AgreementType>
             <tem:PaymentMethod>DEBIT ORDER</tem:PaymentMethod>
           </tem:FinanceApplication>
           <tem:Consents>
-            <tem:DataAttestationInd>${d.dataAttestation ? 'true' : 'false'}</tem:DataAttestationInd>
-            <tem:TelesalesMarketingConsentInd>${d.marketingConsent ? 'true' : 'false'}</tem:TelesalesMarketingConsentInd>
-            <tem:EmailMarketingConsentInd>${d.marketingConsent ? 'true' : 'false'}</tem:EmailMarketingConsentInd>
-            <tem:SMSMarketingConsentInd>${d.marketingConsent ? 'true' : 'false'}</tem:SMSMarketingConsentInd>
-            <tem:IdxConsentInd>${d.financialAccessConsent ? 'true' : 'false'}</tem:IdxConsentInd>
-            <tem:IvxConsentInd>${d.financialAccessConsent ? 'true' : 'false'}</tem:IvxConsentInd>
+            <tem:DataAttestationInd>${d.dataAttestation ? '1' : '0'}</tem:DataAttestationInd>
+            <tem:TelesalesMarketingConsentInd>${d.marketingConsent ? '1' : '0'}</tem:TelesalesMarketingConsentInd>
+            <tem:EmailMarketingConsentInd>${d.marketingConsent ? '1' : '0'}</tem:EmailMarketingConsentInd>
+            <tem:SMSMarketingConsentInd>${d.marketingConsent ? '1' : '0'}</tem:SMSMarketingConsentInd>
+            <tem:IdxConsentInd>${d.financialAccessConsent ? '1' : '0'}</tem:IdxConsentInd>
+            <tem:IvxConsentInd>${d.financialAccessConsent ? '1' : '0'}</tem:IvxConsentInd>
           </tem:Consents>
         </tem:Client>
       </tem:Policy>${productsXml}
@@ -236,7 +268,6 @@ function generateSalesRef(branchCode) {
 }
 
 function parseEdithXMLResponse(xml) {
-  // Basic XML parsing — extract key elements
   const getTag = (tag) => {
     const match = xml.match(new RegExp(`<[^>]*${tag}[^>]*>([^<]*)<`, 'i'));
     return match ? match[1].trim() : null;
@@ -245,7 +276,6 @@ function parseEdithXMLResponse(xml) {
   const policyNumber = getTag('PolicyNumber');
   const errors = [];
 
-  // Extract field errors from SOAP response
   const errorMatches = xml.matchAll(/<Error[^>]*>([\s\S]*?)<\/Error>/gi);
   for (const m of errorMatches) {
     const fieldMatch = m[1].match(/<FieldName[^>]*>([^<]*)<\/FieldName>/i);
