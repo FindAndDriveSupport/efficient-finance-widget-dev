@@ -23,7 +23,7 @@ export const DEALERS = {
     branchCode: 'FND001',                    // ← Edith BranchCode
     allowedDomains: [
       'findndrive.co.za',
-      'www.findndrive.co.za',
+      'https://efficient-finance-widget-dev.still-fire-1c3d.workers.dev',
       'localhost',                            // ← dev only; remove in production
     ],
     mixpanelToken: 'YOUR_MIXPANEL_TOKEN',    // ← single MP account; refer domain identifies dealer
