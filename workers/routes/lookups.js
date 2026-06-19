@@ -21,12 +21,12 @@ export async function handleLookups(request, ctx, jsonResponse) {
     let results;
     if (query.length < 1) {
       const { results: rows } = await env.DB.prepare(
-        `SELECT ${selectCols} FROM ${table} ORDER BY name ASC LIMIT 100`
+        `SELECT ${selectCols} FROM ${table} WHERE name LIKE ?1ORDER BY name ASC LIMIT 1000`
       ).all();
       results = rows;
     } else {
       const { results: rows } = await env.DB.prepare(
-        `SELECT ${selectCols} FROM ${table} WHERE name LIKE ?1 ORDER BY name ASC LIMIT 50`
+        `SELECT ${selectCols} FROM ${table} WHERE name LIKE ?1 ORDER BY name ASC LIMIT 1000`
       ).bind(`%${query}%`).all();
       results = rows;
     }
