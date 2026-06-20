@@ -40,7 +40,26 @@ export async function handlePrediction(request, ctx, jsonResponse) {
       body: JSON.stringify(seritiPayload),
     }, env, dealerConfig?.key);
   } catch (err) {
+    // Check if the error message indicates a 502/503 from Seriti
+    const msg = err.message || '';
+    const isSystemDown = msg.includes('502') || msg.includes('503') || msg.includes('unavailable') || msg.includes('Bad Gateway');
+    if (isSystemDown) {
+      return jsonResponse({
+        error: 'Seriti systems are temporarily unavailable. Please try again in a few minutes.',
+        code: 502,
+        systemDown: true,
+      }, 502, origin, env);
+    }
     return jsonResponse({ error: 'Seriti API error', details: err.message }, 502, origin, env);
+  }
+
+  // Also check if result itself indicates a system error
+  if (result?.statusCode === 502 || result?.statusCode === 503 || result?.systemDown) {
+    return jsonResponse({
+      error: 'Seriti systems are temporarily unavailable. Please try again in a few minutes.',
+      code: 502,
+      systemDown: true,
+    }, 502, origin, env);
   }
 
   // Map prediction labels per spec
