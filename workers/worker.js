@@ -1,26 +1,19 @@
 /**
  * worker.js — E-fficient Finance Widget
  * Cloudflare Worker: API proxy, auth, CORS, dealer routing
- *
- * All secrets are stored in Cloudflare Worker environment variables:
- *   SERITI_API_KEY        — Seriti API key
- *   SERITI_API_SECRET     — Seriti API secret
- *   EDITH_COMPANY_CODE    — Edith CompanyCode
- *   EDITH_COMPANY_PASS    — Edith CompanyPassword
- *
- * Set these with: wrangler secret put SERITI_API_KEY
  */
 
 import { isOriginAllowed, getDealerConfig } from './dealers/dealers.config.js';
-import { handlePreQual }       from './routes/preQual.js';
-import { handlePrediction }    from './routes/prediction.js';
-import { handleGetApplicant }  from './routes/getApplicant.js';
-import { handleCreatePolicy }  from './routes/createPolicy.js';
-import { handleSubmitDocuments }  from './routes/submitDocuments.js';
-import { handleDealerConfig }  from './routes/dealerConfig.js';
-import { handleAddressSearch } from './routes/addressSearch.js';
+import { handlePreQual }         from './routes/preQual.js';
+import { handlePrediction }      from './routes/prediction.js';
+import { handleGetApplicant }    from './routes/getApplicant.js';
+import { handleCreatePolicy }    from './routes/createPolicy.js';
+import { handleSubmitDocuments } from './routes/submitDocuments.js';
+import { handleDealerConfig }    from './routes/dealerConfig.js';
+import { handleAddressSearch }   from './routes/addressSearch.js';
+import { handleGetPolicies }     from './routes/getPolicies.js';
+import { handleLookups }         from './routes/lookups.js';
 
-import { handleLookups } from './routes/lookups.js';
 // ── CORS headers ──────────────────────────────────────────────
 
 function corsHeaders(origin, env) {
@@ -28,7 +21,7 @@ function corsHeaders(origin, env) {
   return {
     'Access-Control-Allow-Origin': allowed ? origin : 'null',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Dealer-Key',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Dealer-Key, X-Api-Key',
     'Access-Control-Max-Age': '86400',
   };
 }
@@ -66,27 +59,20 @@ export default {
     const dealerConfig = getDealerConfig(dealerKey, origin);
 
     // Inject env + dealerConfig into a context object
-    const ctx2 = { env, dealerConfig, origin };
+    const ctx2 = { env, dealerConfig, origin, ctx };
 
     try {
       const path = url.pathname;
 
-      // ── Dealer config endpoint (used by frontend to load theme) ──
       if (path === '/api/dealer/config' && method === 'GET') {
         return handleDealerConfig(request, ctx2, jsonResponse);
       }
-
-      // ── Seriti: Pre-Qualification (Step 1) ──
       if (path === '/api/financing/pre-qualification' && method === 'POST') {
         return handlePreQual(request, ctx2, jsonResponse);
       }
-
-      // ── Seriti: Prediction (Step 2 result) ──
       if (path === '/api/financing/prediction' && method === 'POST') {
         return handlePrediction(request, ctx2, jsonResponse);
       }
-
-      // ── Seriti: Get Applicant (consent → Step 3 prefill) ──
       if (path === '/api/address-search' && method === 'GET') {
         return handleAddressSearch(request, ctx2, jsonResponse);
       }
@@ -96,15 +82,14 @@ export default {
       if (path === '/api/financing/applicant' && method === 'GET') {
         return handleGetApplicant(request, ctx2, jsonResponse);
       }
-
-      // ── Edith: Create Policy (Step 3 submit) ──
       if (path === '/api/policy/create' && method === 'POST') {
         return handleCreatePolicy(request, ctx2, jsonResponse);
       }
-
-      // ── Edith: Submit Documents (Fast Application) ──
       if (path === '/api/policy/documents' && method === 'POST') {
         return handleSubmitDocuments(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/policies' && method === 'GET') {
+        return handleGetPolicies(request, ctx2, jsonResponse);
       }
 
       return jsonResponse({ error: 'Not found' }, 404, origin, env);
