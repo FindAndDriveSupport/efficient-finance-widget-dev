@@ -27,13 +27,10 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
   const companyCode = isProd ? env.EDITH_COMPANY_CODE_PROD : env.EDITH_COMPANY_CODE;
   const companyPass = isProd ? env.EDITH_COMPANY_PASS_PROD : env.EDITH_COMPANY_PASS;
   const wsdlUrl = isProd ? env.EDITH_WSDL_URL_PROD : env.EDITH_WSDL_URL;
-  console.error('EDITH_WSDL_URL: ' + wsdlUrl + ' | isProd: ' + isProd);
 
   // Build Edith XML payload
   const salesRef = generateSalesRef(dealerConfig.branchCode);
-  console.error("EDITH_PAYLOAD: " + JSON.stringify(body));
   const xml = buildEdithXML(body, companyCode, companyPass, dealerConfig, salesRef);
-  console.error("EDITH_XML: " + xml);
 
   console.log(JSON.stringify({
     level: 'info',
@@ -64,9 +61,7 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
       body: text,
       ts: new Date().toISOString(),
     }));
-    console.error("EDITH_RAW_RESPONSE: " + text);
     edithResponse = parseEdithXMLResponse(text);
-    console.error("EDITH_PARSED: " + JSON.stringify(edithResponse));
   } catch (err) {
     logError('edith_network_error', err, env, { salesRef, dealerKey: dealerConfig.key });
     return jsonResponse({
