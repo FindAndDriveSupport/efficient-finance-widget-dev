@@ -191,6 +191,7 @@ function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
         <tem:Spouse>
           ${d.spouseFirstName ? `<tem:FirstName>${esc(d.spouseFirstName)}</tem:FirstName>` : ''}
           ${d.spouseLastName  ? `<tem:LastName>${esc(d.spouseLastName)}</tem:LastName>` : ''}
+          <tem:IDType>${esc(d.spouseIdType || 'RSA ID')}</tem:IDType>
           ${d.spouseIdNumber  ? `<tem:IDNumber>${esc(d.spouseIdNumber)}</tem:IDNumber>` : ''}
         </tem:Spouse>` : ''}
         ${d.nextOfKinFirstName ? `
@@ -210,6 +211,8 @@ function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
           ${d.gender        ? `<tem:Gender>${esc(d.gender.toUpperCase())}</tem:Gender>` : ''}
           ${d.educationLevel ? `<tem:EducationLevel>${esc(d.educationLevel)}</tem:EducationLevel>` : ''}
           ${d.maritalStatus ? `<tem:MaritalStatus>${esc(d.maritalStatus)}</tem:MaritalStatus>` : ''}
+          ${d.marriageType  ? `<tem:MarriageType>${esc(d.marriageType)}</tem:MarriageType>` : ''}
+          ${d.marriageDate  ? `<tem:MarriageDate>${esc(d.marriageDate)}</tem:MarriageDate>` : ''}
           ${d.address1 ? `
           <tem:PhysicalAddress>
             <tem:Address1>${esc(d.address1)}</tem:Address1>
