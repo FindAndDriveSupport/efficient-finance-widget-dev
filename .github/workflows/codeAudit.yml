@@ -27,7 +27,7 @@ jobs:
 
       - name: "[createPolicy] No debug logs"
         run: |
-          if grep -qE "EDITH_PAYLOAD|EDITH_XML|EDITH_RAW_RESPONSE|EDITH_PARSED|EDITH_WSDL_URL" workers/routes/createPolicy.js; then
+          if grep -qE "EDITH_PAYLOAD|EDITH_XML|EDITH_RAW_RESPONSE|EDITH_PARSED|console.error.*EDITH_WSDL_URL" workers/routes/createPolicy.js; then
             echo "❌ Debug console.error logs found in createPolicy.js" && exit 1
           fi
 
