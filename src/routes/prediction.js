@@ -12,29 +12,123 @@ export async function handlePrediction(request, ctx, jsonResponse) {
   try { body = await request.json(); }
   catch { return jsonResponse({ error: 'Invalid JSON body' }, 400, origin, env); }
 
-  const { applicantId, grossIncome, idNumber, hasNoSAID, livingExpenses } = body;
+  const { applicantId, grossIncome, idNumber, hasSAID, hasNoSAID, livingExpenses } = body;
 
   if (!applicantId) {
     return jsonResponse({ error: 'Missing applicantId' }, 400, origin, env);
   }
 
-  // ID validation (skip if hasNoSAID)
-  if (!hasNoSAID) {
+  // ID validation (skip if no SA ID)
+  const noSAID = hasNoSAID || !hasSAID;
+  if (!noSAID) {
     const idError = validateSAID(idNumber);
     if (idError) return jsonResponse({ error: idError }, 400, origin, env);
   }
 
   const seritiPayload = {
     applicantId,
-    grossIncome: Number(grossIncome),
-    livingExpenses: Number(livingExpenses) || 0,
-    ...(hasNoSAID ? { hasNoSAID: true } : { idNumber }),
+    grossIncome: Number(grossIncome) || 0,
+    netIncome: Number(body.netIncome) || 0,
+    emailAddress: body.email || '',
+    ...(!noSAID && idNumber ? { idNumber } : {}),
   };
 
-  const result = await seritiRequest('/api/Financing/Prediction', {
-    method: 'POST',
-    body: JSON.stringify(seritiPayload),
-  }, env);
+  console.log(JSON.stringify({
+    level: 'info',
+    type: 'seriti_prediction_request',
+    dealerKey: dealerConfig?.key,
+    applicantId,
+    payload: seritiPayload,
+    ts: new Date().toISOString(),
+  }));
+
+  let result;
+  try {
+    result = await seritiRequest('/api/Financing/Prediction', {
+      method: 'POST',
+      body: JSON.stringify(seritiPayload),
+    }, env, dealerConfig?.key);
+  } catch (err) {
+    const msg = err.message || '';
+
+    // 409 — Prediction already calculated, use PATCH to retrieve it
+    if (msg.includes('409')) {
+      try {
+        result = await seritiRequest('/api/Financing/Prediction', {
+          method: 'PATCH',
+          body: JSON.stringify({
+            applicantId,
+            netIncome: Number(body.netIncome) || 0,
+            livingExpenses: 0,
+          }),
+        }, env, dealerConfig?.key);
+      } catch (patchErr) {
+        console.error(JSON.stringify({
+          level: 'error',
+          type: 'seriti_prediction_patch_error',
+          dealerKey: dealerConfig?.key,
+          applicantId,
+          error: patchErr.message,
+          ts: new Date().toISOString(),
+        }));
+        return jsonResponse({ error: 'Seriti API error', details: patchErr.message }, 502, origin, env);
+      }
+    } else {
+      // Check if the error is an IDAS bureau failure (no credit profile found)
+      const isIdasFailure = msg.includes('500') && msg.includes('Idas');
+      const isSystemDown = !isIdasFailure && (msg.includes('502') || msg.includes('503') || msg.includes('500') || msg.includes('unavailable') || msg.includes('Bad Gateway'));
+
+      if (isIdasFailure) {
+        console.error(JSON.stringify({
+          level: 'error',
+          type: 'seriti_idas_failure',
+          dealerKey: dealerConfig?.key,
+          applicantId,
+          error: msg.substring(0, 500),
+          ts: new Date().toISOString(),
+        }));
+        return jsonResponse({
+          error: 'No credit bureau information found for this ID number.',
+          code: 500,
+          idasFailed: true,
+        }, 200, origin, env);
+      }
+
+      if (isSystemDown) {
+        console.error(JSON.stringify({
+          level: 'error',
+          type: 'seriti_system_down',
+          dealerKey: dealerConfig?.key,
+          applicantId,
+          error: msg,
+          ts: new Date().toISOString(),
+        }));
+        return jsonResponse({
+          error: 'Seriti systems are temporarily unavailable. Please try again in a few minutes.',
+          code: 502,
+          systemDown: true,
+        }, 502, origin, env);
+      }
+      console.error(JSON.stringify({
+        level: 'error',
+        type: 'seriti_prediction_error',
+        dealerKey: dealerConfig?.key,
+        applicantId,
+        error: msg,
+        ts: new Date().toISOString(),
+      }));
+      return jsonResponse({ error: 'Seriti API error', details: err.message }, 502, origin, env);
+    }
+  }
+
+  // Also check if result itself indicates a system error
+  if (result?.statusCode === 502 || result?.statusCode === 503 || result?.systemDown) {
+    return jsonResponse({
+      error: 'Seriti systems are temporarily unavailable. Please try again in a few minutes.',
+      code: 502,
+      systemDown: true,
+    }, 502, origin, env);
+  }
 
   // Map prediction labels per spec
   const predictionMap = {
@@ -42,15 +136,16 @@ export async function handlePrediction(request, ctx, jsonResponse) {
     Medium: { label: 'Good news',    headline: 'You have a good chance of qualifying!',     body: 'Your profile looks promising. Complete your application and we\'ll be in touch shortly.' },
     High:   { label: 'Great news',   headline: 'You\'re likely to qualify!',                body: 'Your profile looks great. Submit your application and we\'ll help you get into your next car.' },
   };
-  const predKey = typeof result.prediction === 'string'
-    ? result.prediction.charAt(0).toUpperCase() + result.prediction.slice(1).toLowerCase()
-    : 'Low';
+
+  const predResponse = result.predictionResponse || {};
+  const predNum = predResponse.prediction ?? -1;
+  const predKey = predNum === 2 ? 'High' : predNum === 1 ? 'Medium' : 'Low';
 
   return jsonResponse({
     prediction: predictionMap[predKey] || predictionMap.Low,
-    reason: result.reason,
-    estimatedApprovalAmount: result.estimatedApprovalAmount,
-    monthlyInstalment: result.estimatedFinanceSpend, // renamed per spec
+    reason: predResponse.reason,
+    estimatedApprovalAmount: predResponse.estimatedApprovalAmount,
+    monthlyInstalment: predResponse.estimatedFinanceSpend,
   }, 200, origin, env);
 }
 
