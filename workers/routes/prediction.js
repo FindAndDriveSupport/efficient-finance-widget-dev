@@ -33,6 +33,15 @@ export async function handlePrediction(request, ctx, jsonResponse) {
     ...(!noSAID && idNumber ? { idNumber } : {}),
   };
 
+  console.log(JSON.stringify({
+    level: 'info',
+    type: 'seriti_prediction_request',
+    dealerKey: dealerConfig?.key,
+    applicantId,
+    payload: seritiPayload,
+    ts: new Date().toISOString(),
+  }));
+
   let result;
   try {
     result = await seritiRequest('/api/Financing/Prediction', {
@@ -40,17 +49,76 @@ export async function handlePrediction(request, ctx, jsonResponse) {
       body: JSON.stringify(seritiPayload),
     }, env, dealerConfig?.key);
   } catch (err) {
-    // Check if the error message indicates a 502/503 from Seriti
     const msg = err.message || '';
-    const isSystemDown = msg.includes('502') || msg.includes('503') || msg.includes('unavailable') || msg.includes('Bad Gateway');
-    if (isSystemDown) {
-      return jsonResponse({
-        error: 'Seriti systems are temporarily unavailable. Please try again in a few minutes.',
-        code: 502,
-        systemDown: true,
-      }, 502, origin, env);
+
+    // 409 — Prediction already calculated, use PATCH to retrieve it
+    if (msg.includes('409')) {
+      try {
+        result = await seritiRequest('/api/Financing/Prediction', {
+          method: 'PATCH',
+          body: JSON.stringify({
+            applicantId,
+            netIncome: Number(body.netIncome) || 0,
+            livingExpenses: 0,
+          }),
+        }, env, dealerConfig?.key);
+      } catch (patchErr) {
+        console.error(JSON.stringify({
+          level: 'error',
+          type: 'seriti_prediction_patch_error',
+          dealerKey: dealerConfig?.key,
+          applicantId,
+          error: patchErr.message,
+          ts: new Date().toISOString(),
+        }));
+        return jsonResponse({ error: 'Seriti API error', details: patchErr.message }, 502, origin, env);
+      }
+    } else {
+      // Check if the error is an IDAS bureau failure (no credit profile found)
+      const isIdasFailure = msg.includes('500') && msg.includes('Idas');
+      const isSystemDown = !isIdasFailure && (msg.includes('502') || msg.includes('503') || msg.includes('500') || msg.includes('unavailable') || msg.includes('Bad Gateway'));
+
+      if (isIdasFailure) {
+        console.error(JSON.stringify({
+          level: 'error',
+          type: 'seriti_idas_failure',
+          dealerKey: dealerConfig?.key,
+          applicantId,
+          error: msg.substring(0, 500),
+          ts: new Date().toISOString(),
+        }));
+        return jsonResponse({
+          error: 'No credit bureau information found for this ID number.',
+          code: 500,
+          idasFailed: true,
+        }, 200, origin, env);
+      }
+
+      if (isSystemDown) {
+        console.error(JSON.stringify({
+          level: 'error',
+          type: 'seriti_system_down',
+          dealerKey: dealerConfig?.key,
+          applicantId,
+          error: msg,
+          ts: new Date().toISOString(),
+        }));
+        return jsonResponse({
+          error: 'Seriti systems are temporarily unavailable. Please try again in a few minutes.',
+          code: 502,
+          systemDown: true,
+        }, 502, origin, env);
+      }
+      console.error(JSON.stringify({
+        level: 'error',
+        type: 'seriti_prediction_error',
+        dealerKey: dealerConfig?.key,
+        applicantId,
+        error: msg,
+        ts: new Date().toISOString(),
+      }));
+      return jsonResponse({ error: 'Seriti API error', details: err.message }, 502, origin, env);
     }
-    return jsonResponse({ error: 'Seriti API error', details: err.message }, 502, origin, env);
   }
 
   // Also check if result itself indicates a system error
