@@ -17,9 +17,9 @@ import { handleLookups }         from './routes/lookups.js';
 // ── CORS headers ──────────────────────────────────────────────
 
 function corsHeaders(origin, env) {
-  const allowed = isOriginAllowed(origin) || env.WORKER_ENV === 'development';
+  const allowed = !origin || isOriginAllowed(origin) || env.WORKER_ENV === 'development';
   return {
-    'Access-Control-Allow-Origin': allowed ? origin : 'null',
+    'Access-Control-Allow-Origin': allowed ? (origin || '*') : 'null',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Dealer-Key, X-Api-Key',
     'Access-Control-Max-Age': '86400',
@@ -41,7 +41,12 @@ function jsonResponse(data, status = 200, origin = '*', env = {}) {
 export default {
   async fetch(request, env, ctx) {
     const url    = new URL(request.url);
-    const origin = request.headers.get('Origin') || '';
+    const origin = request.headers.get('Origin') ||
+      (() => {
+        const ref = request.headers.get('Referer');
+        if (!ref) return '';
+        try { return new URL(ref).origin; } catch { return ''; }
+      })();
     const method = request.method;
 
     // Preflight
@@ -49,7 +54,7 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders(origin, env) });
     }
 
-    // Block non-whitelisted origins (except in dev)
+    // Block non-whitelisted origins (except in dev or when no origin header)
     if (origin && env.WORKER_ENV !== 'development' && !isOriginAllowed(origin)) {
       return jsonResponse({ error: 'Origin not permitted' }, 403, origin, env);
     }
