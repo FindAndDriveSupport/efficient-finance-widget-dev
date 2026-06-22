@@ -31,7 +31,7 @@ jobs:
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
-          repository: FindAndDriveSupport/efficient-finance-widget-dev
+          repository: FindAndDriveSupport/efficient-finance-widget
           token: ${{ secrets.SYNC_PAT }}
           path: target
 
