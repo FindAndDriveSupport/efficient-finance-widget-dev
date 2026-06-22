@@ -2,12 +2,6 @@
  * seritiAuth.js
  * Manages Seriti API bearer token with automatic refresh (token expires hourly).
  * Uses Cloudflare KV for token caching across Worker instances.
- *
- * Per-dealer credentials stored in KV as:
- *   SERITI_KEY_{dealerKey}
- *   SERITI_SECRET_{dealerKey}
- *
- * Falls back to global SERITI_API_KEY / SERITI_API_SECRET env vars.
  */
 
 const SERITI_BASE = 'https://seritiapi.findndrive.co.za';
@@ -78,7 +72,9 @@ export async function getSeritiToken(env, dealerKey) {
 
 export async function seritiRequest(path, options = {}, env, dealerKey) {
   const token = await getSeritiToken(env, dealerKey);
-  const response = await fetch(`${SERITI_BASE}${path}`, {
+  const url = `${SERITI_BASE}${path}`;
+
+  const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -86,11 +82,26 @@ export async function seritiRequest(path, options = {}, env, dealerKey) {
       ...(options.headers || {}),
     },
   });
+
   const text = await response.text();
+
+  // Log full Seriti response for diagnostics
+  console.log(JSON.stringify({
+    level: 'info',
+    type: 'seriti_response',
+    path,
+    dealerKey,
+    status: response.status,
+    body: text.substring(0, 2000),
+    ts: new Date().toISOString(),
+  }));
+
   let data;
   try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
   if (!response.ok) {
     throw new Error(`Seriti API error (${response.status}): ${JSON.stringify(data)}`);
   }
+
   return data;
 }
