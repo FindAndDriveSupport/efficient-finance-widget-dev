@@ -5,28 +5,22 @@
  *  SINGLE SOURCE OF TRUTH — ALL DEALER SETTINGS LIVE HERE
  *  Add a dealer, change a theme, update branch codes — all in one place.
  * ████████████████████████████████████████████████████████████████
- *
- * Each dealer entry controls:
- *   - Edith branch code
- *   - Whitelisted embed domains
- *   - UI theme (colours, logo)
- *   - Feature flags
- *   - Finance Type
  */
 
 export const DEALERS = {
   // ─────────────────────────────────────────────────────────────
-  // EXAMPLE DEALER 1 — FindnDrive (default / fallback)
+  // FindnDrive (default / fallback)
   // ─────────────────────────────────────────────────────────────
   'findndrive': {
     name: 'FindnDrive',
-    branchCode: 'SRT001EM',                    // ← Edith BranchCode
+    branchCode: 'SRT001EM',
     financeType: 'vehicle',
+    edithEnv: 'dev',
     allowedDomains: [
       'findndrive.co.za',
+      'www.findndrive.co.za',
       'seritifinancedev.findndrive.co.za',
       'seritifinance.findndrive.co.za',
-      'www.findndrive.co.za',
       'localhost',
       'findanddrivesupport-e-fficient-ui.still-fire-1c3d.workers.dev',
     ],
@@ -42,33 +36,57 @@ export const DEALERS = {
     features: {
       showDeposit: true,
       showCurrentFinance: true,
-      vehicleQueryParams: true,              // accepts ?make=&model=&mm= in embed URL
+      vehicleQueryParams: true,
     },
   },
 
   // ─────────────────────────────────────────────────────────────
-  // EXAMPLE DEALER 2 — Car Dealer XYZ
+  // Keitzman Finance
   // ─────────────────────────────────────────────────────────────
-  'dealer-xyz': {
-    name: 'Car Dealer XYZ',
-    branchCode: 'XYZ002',
+  'keitzman-finance': {
+    name: 'Keitzman Finance',
+    branchCode: 'KAEF001',
     financeType: 'vehicle',
+    edithEnv: 'prod',
     allowedDomains: [
-      'dealerxyz.co.za',
-      'www.dealerxyz.co.za',
+      'keitzmanfinance.co.za',
+      'keitzman-finance.seritifinance.findndrive.co.za',
+      'seritifinance.findndrive.co.za',
     ],
     theme: {
-      primary: '#E63946',
-      primaryLight: '#FF6B6B',
-      primaryDark: '#9B0000',
-      gradient: 'linear-gradient(135deg, #E63946 0%, #FF6B6B 100%)',
+      primary: '#c0392b',
+      gradient: 'linear-gradient(135deg, #c0392b 0%, #c0392b 100%)',
       fontFamily: "'Inter', sans-serif",
-      borderRadius: '8px',
-      logoUrl: '/logos/dealer-xyz.svg',
+      borderRadius: '12px',
     },
     features: {
       showDeposit: true,
-      showCurrentFinance: false,
+      showCurrentFinance: true,
+      vehicleQueryParams: true,
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // Yonda Bike
+  // ─────────────────────────────────────────────────────────────
+  'yonda-bike': {
+    name: 'Yonda Bike',
+    branchCode: 'YOND001',
+    financeType: 'bike',
+    edithEnv: 'prod',
+    allowedDomains: [
+      'yonda.co.za',
+      'yonda-bike.seritifinance.findndrive.co.za',
+    ],
+    theme: {
+      primary: '#0154fc',
+      gradient: 'linear-gradient(135deg, #0154fc 0%, #0154fc 100%)',
+      fontFamily: "'Inter', sans-serif",
+      borderRadius: '12px',
+    },
+    features: {
+      showDeposit: true,
+      showCurrentFinance: true,
       vehicleQueryParams: true,
     },
   },
@@ -80,10 +98,6 @@ export const DEALERS = {
 
 // ── Lookup helpers ────────────────────────────────────────────
 
-/**
- * Get dealer config by branchCode query param or referring domain.
- * Priority: explicit ?dealer= param → referring domain match → null
- */
 export function getDealerConfig(dealerKey, referringDomain) {
   // 1. Explicit key (from query param ?dealer=findndrive)
   if (dealerKey && DEALERS[dealerKey]) {
@@ -100,15 +114,11 @@ export function getDealerConfig(dealerKey, referringDomain) {
     }
   }
 
-  // 3. Fallback to first dealer (or null — your choice)
+  // 3. Fallback to first dealer
   const [firstKey, firstConfig] = Object.entries(DEALERS)[0];
   return { key: firstKey, ...firstConfig };
 }
 
-/**
- * Check whether a given origin is whitelisted for any dealer.
- * Used by the CORS / embed middleware.
- */
 export function isOriginAllowed(origin) {
   if (!origin) return false;
   const hostname = origin.replace(/^https?:\/\//, '').split('/')[0].split(':')[0];
