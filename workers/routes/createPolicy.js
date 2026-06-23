@@ -5,15 +5,23 @@
  * Calls Edith webservice CreatePolicy with full field mapping.
  * Uses edithErrors.js error classification for user-facing messages.
  * Logs all errors to Cloudflare structured logging for CI/CD observability.
+ *
+ * Failure handling:
+ *   - Genuine network failures (fetch throws) → retry up to 3 times
+ *   - On exhausted retries → record in D1 policy_events, email dealer, return success to user
+ *   - Edith system errors (500 response) → record in D1, email dealer, return success to user
  */
 
-import { STATUS_CODES, SYSTEM_MESSAGES, FIELD_ERRORS, parseEdithErrors } from '../utils/edithErrors.js';
+import { SYSTEM_MESSAGES, parseEdithErrors } from '../utils/edithErrors.js';
 
 // YONDA Service Fee — defaults applied for financeType === 'bike'
 const YONDA_SERVICE_FEE = {
   productOptionId: '9845',
   price: '2990.00', // R2,990 including VAT
 };
+
+const RETRY_LIMIT = 3;
+const RETRY_DELAY_MS = 2000;
 
 export async function handleCreatePolicy(request, ctx, jsonResponse) {
   const { env, dealerConfig, origin, ctx: workerCtx } = ctx;
@@ -28,7 +36,6 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
   const companyPass = isProd ? env.EDITH_COMPANY_PASS_PROD : env.EDITH_COMPANY_PASS;
   const wsdlUrl = isProd ? env.EDITH_WSDL_URL_PROD : env.EDITH_WSDL_URL;
 
-  // Build Edith XML payload
   const salesRef = generateSalesRef(dealerConfig.branchCode);
   const xml = buildEdithXML(body, companyCode, companyPass, dealerConfig, salesRef);
 
@@ -42,35 +49,130 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
     ts: new Date().toISOString(),
   }));
 
-  let edithResponse;
-  try {
-    const res = await fetch(wsdlUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/xml; charset=utf-8',
-        'SOAPAction': 'http://ws.edith.co.za/EdithServices/PolicyServicesV300/CreatePolicy',
-      },
-      body: xml,
-    });
-    const text = await res.text();
-    console.log(JSON.stringify({
-      level: 'info',
-      type: 'edith_create_policy_response',
-      salesRef,
-      status: res.status,
-      body: text,
-      ts: new Date().toISOString(),
-    }));
-    edithResponse = parseEdithXMLResponse(text);
-  } catch (err) {
-    logError('edith_network_error', err, env, { salesRef, dealerKey: dealerConfig.key });
-    return jsonResponse({
-      error: 'Could not connect to the finance system. Please try again.',
-      code: 500,
-    }, 502, origin, env);
+  // ── Fetch with retry (network failures only) ──────────────────
+  let rawText = null;
+  let fetchStatus = null;
+  let networkFailure = false;
+  let retryCount = 0;
+
+  for (let attempt = 0; attempt < RETRY_LIMIT; attempt++) {
+    try {
+      const res = await fetch(wsdlUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/xml; charset=utf-8',
+          'SOAPAction': 'http://ws.edith.co.za/EdithServices/PolicyServicesV300/CreatePolicy',
+        },
+        body: xml,
+      });
+      rawText = await res.text();
+      fetchStatus = res.status;
+      networkFailure = false;
+      retryCount = attempt;
+      break; // success — got a response
+    } catch (err) {
+      retryCount = attempt + 1;
+      networkFailure = true;
+      logError('edith_network_error', { message: err.message, attempt: attempt + 1 }, env, {
+        salesRef,
+        dealerKey: dealerConfig.key,
+      });
+      if (attempt < RETRY_LIMIT - 1) {
+        await sleep(RETRY_DELAY_MS);
+      }
+    }
   }
 
-  // Handle system-level errors
+  // ── All retries exhausted — genuine network failure ───────────
+  if (networkFailure) {
+    const failureReason = `Network failure after ${RETRY_LIMIT} attempts — Edith unreachable`;
+    workerCtx?.waitUntil(
+      recordFailure({
+        env,
+        dealerConfig,
+        body,
+        salesRef,
+        edithResponse: null,
+        failureReason,
+        retryCount,
+        requestXml: xml,
+      })
+    );
+    workerCtx?.waitUntil(
+      notifyDealer({
+        env,
+        dealerConfig,
+        body,
+        salesRef,
+        failureReason,
+      })
+    );
+    return jsonResponse({
+      success: true,
+      manualFollowUp: true,
+      salesRef,
+      code: 100,
+    }, 200, origin, env);
+  }
+
+  // ── Got a response — log and parse ───────────────────────────
+  console.log(JSON.stringify({
+    level: 'info',
+    type: 'edith_create_policy_response',
+    salesRef,
+    status: fetchStatus,
+    body: rawText,
+    ts: new Date().toISOString(),
+  }));
+
+  const edithResponse = parseEdithXMLResponse(rawText);
+
+  console.log(JSON.stringify({
+    level: 'info',
+    type: 'edith_parsed',
+    salesRef,
+    statusCode: edithResponse.statusCode,
+    policyNumber: edithResponse.policyNumber,
+    errorCount: edithResponse.errors.length,
+    ts: new Date().toISOString(),
+  }));
+
+  // ── Edith system-level error (500) ────────────────────────────
+  if (edithResponse.statusCode === 500) {
+    const failureReason = `Edith system error 500 — ${edithResponse.systemMessage || 'System failure'}`;
+    workerCtx?.waitUntil(
+      recordFailure({
+        env,
+        dealerConfig,
+        body,
+        salesRef,
+        edithResponse: rawText,
+        failureReason,
+        retryCount,
+        requestXml: xml,
+      })
+    );
+    workerCtx?.waitUntil(
+      notifyDealer({
+        env,
+        dealerConfig,
+        body,
+        salesRef,
+        failureReason,
+      })
+    );
+    logError('edith_system_error_500', { salesRef, failureReason }, env, {
+      dealerKey: dealerConfig.key,
+    });
+    return jsonResponse({
+      success: true,
+      manualFollowUp: true,
+      salesRef,
+      code: 100,
+    }, 200, origin, env);
+  }
+
+  // ── Other system-level errors (400, 410, 420) ─────────────────
   const sysCode = edithResponse.statusCode;
   if (SYSTEM_MESSAGES[sysCode]) {
     const msg = SYSTEM_MESSAGES[sysCode];
@@ -83,7 +185,7 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
     }, 422, origin, env);
   }
 
-  // Handle field-level errors
+  // ── Field-level errors ────────────────────────────────────────
   if (edithResponse.errors && edithResponse.errors.length > 0) {
     const parsedErrors = parseEdithErrors(edithResponse.errors);
     const fatal = parsedErrors.filter(e => e.severity === 'error');
@@ -93,6 +195,7 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
       logError('edith_field_errors', fatal, env, { salesRef });
       return jsonResponse({
         success: false,
+        policyNumber: edithResponse.policyNumber || null,
         errors: fatal,
         warnings,
         code: 300,
@@ -101,36 +204,37 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
 
     // Code 200 — success with warnings
     logWarning('edith_field_warnings', warnings, env, { salesRef });
+    writePolicyEvent({
+      env,
+      workerCtx,
+      dealerConfig,
+      body,
+      salesRef,
+      policyNumber: edithResponse.policyNumber,
+      status: 'success',
+      retryCount,
+    });
     return jsonResponse({
       success: true,
       policyNumber: edithResponse.policyNumber,
+      salesRef,
       warnings,
       code: 200,
     }, 200, origin, env);
   }
 
-  // Clean success — store policy event in D1 and return
+  // ── Clean success ─────────────────────────────────────────────
   const policyNumber = edithResponse.policyNumber;
-
-  // Write to D1 in background (non-blocking)
-  if (env.DB && policyNumber && workerCtx) {
-    workerCtx.waitUntil(
-      env.DB.prepare(`
-        INSERT INTO policy_events (dealer_key, policy_number, applicant_id, sales_ref, branch_code, finance_type)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `)
-      .bind(
-        dealerConfig.key,
-        policyNumber,
-        body.applicantId || null,
-        salesRef,
-        dealerConfig.branchCode,
-        dealerConfig.financeType || 'vehicle',
-      )
-      .run()
-      .catch(err => console.error('D1 write failed:', err.message))
-    );
-  }
+  writePolicyEvent({
+    env,
+    workerCtx,
+    dealerConfig,
+    body,
+    salesRef,
+    policyNumber,
+    status: 'success',
+    retryCount,
+  });
 
   return jsonResponse({
     success: true,
@@ -140,13 +244,175 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
   }, 200, origin, env);
 }
 
+// ── Record failure in D1 ──────────────────────────────────────
+
+async function recordFailure({ env, dealerConfig, body, salesRef, edithResponse, failureReason, retryCount, requestXml }) {
+  if (!env.DB) return;
+  const applicantName = [body.firstName, body.lastName].filter(Boolean).join(' ') || null;
+  try {
+    await env.DB.prepare(`
+      INSERT INTO policy_events (
+        dealer_key, policy_number, applicant_id, sales_ref, branch_code, finance_type,
+        status, failure_reason, edith_response, request_payload,
+        applicant_name, applicant_mobile, applicant_email, estimated_amount, retry_count
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    .bind(
+      dealerConfig.key,
+      null,
+      body.applicantId || null,
+      salesRef,
+      dealerConfig.branchCode,
+      dealerConfig.financeType || 'vehicle',
+      'failure',
+      failureReason,
+      edithResponse ? edithResponse.substring(0, 4000) : null,
+      JSON.stringify(body).substring(0, 4000),
+      applicantName,
+      body.mobileNumber || null,
+      body.emailAddress || null,
+      body.estimatedApprovalAmount || body.preQualTotal || null,
+      retryCount,
+    )
+    .run();
+    console.log(JSON.stringify({
+      level: 'info',
+      type: 'policy_failure_recorded',
+      salesRef,
+      failureReason,
+      ts: new Date().toISOString(),
+    }));
+  } catch (err) {
+    console.error(JSON.stringify({
+      level: 'error',
+      type: 'd1_failure_write_error',
+      salesRef,
+      error: err.message,
+      ts: new Date().toISOString(),
+    }));
+  }
+}
+
+// ── Write success event to D1 ─────────────────────────────────
+
+function writePolicyEvent({ env, workerCtx, dealerConfig, body, salesRef, policyNumber, status, retryCount }) {
+  if (!env.DB || !workerCtx) return;
+  const applicantName = [body.firstName, body.lastName].filter(Boolean).join(' ') || null;
+  workerCtx.waitUntil(
+    env.DB.prepare(`
+      INSERT INTO policy_events (
+        dealer_key, policy_number, applicant_id, sales_ref, branch_code, finance_type,
+        status, applicant_name, applicant_mobile, applicant_email,
+        estimated_amount, retry_count
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    .bind(
+      dealerConfig.key,
+      policyNumber || null,
+      body.applicantId || null,
+      salesRef,
+      dealerConfig.branchCode,
+      dealerConfig.financeType || 'vehicle',
+      status,
+      applicantName,
+      body.mobileNumber || null,
+      body.emailAddress || null,
+      body.estimatedApprovalAmount || body.preQualTotal || null,
+      retryCount || 0,
+    )
+    .run()
+    .catch(err => console.error('D1 write failed:', err.message))
+  );
+}
+
+// ── Notify dealer via Resend ──────────────────────────────────
+
+async function notifyDealer({ env, dealerConfig, body, salesRef, failureReason }) {
+  const contactEmail = dealerConfig.contactEmail;
+  if (!contactEmail || !env.RESEND_API_KEY) return;
+
+  const applicantName = [body.firstName, body.lastName].filter(Boolean).join(' ') || 'Unknown';
+  const amount = body.estimatedApprovalAmount || body.preQualTotal;
+  const formattedAmount = amount
+    ? `R${Number(amount).toLocaleString('en-ZA', { minimumFractionDigits: 0 })}`
+    : 'Not available';
+
+  const html = `
+    <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+      <h2 style="color: #dc2626; margin-bottom: 4px;">⚠️ Finance Application — Manual Action Required</h2>
+      <p style="color: #6b7280; margin-top: 0;">A finance application could not be automatically processed.</p>
+
+      <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <strong>Reason:</strong> ${failureReason}
+      </div>
+
+      <h3 style="margin-bottom: 8px;">Applicant Details</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 6px 0; color: #6b7280; width: 160px;">Name</td><td style="padding: 6px 0;"><strong>${applicantName}</strong></td></tr>
+        <tr><td style="padding: 6px 0; color: #6b7280;">Mobile</td><td style="padding: 6px 0;">${body.mobileNumber || '—'}</td></tr>
+        <tr><td style="padding: 6px 0; color: #6b7280;">Email</td><td style="padding: 6px 0;">${body.emailAddress || '—'}</td></tr>
+        <tr><td style="padding: 6px 0; color: #6b7280;">ID Number</td><td style="padding: 6px 0;">${body.idNumber || '—'}</td></tr>
+        <tr><td style="padding: 6px 0; color: #6b7280;">Est. Approval</td><td style="padding: 6px 0;">${formattedAmount}</td></tr>
+        <tr><td style="padding: 6px 0; color: #6b7280;">Sales Ref</td><td style="padding: 6px 0; font-family: monospace;">${salesRef}</td></tr>
+      </table>
+
+      <p style="margin-top: 24px; color: #6b7280; font-size: 13px;">
+        Please contact the applicant and submit the application manually if required.<br/>
+        This notification was sent by the ${dealerConfig.name} finance widget.
+      </p>
+    </div>
+  `;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: env.ALERT_FROM_EMAIL || 'alerts@findndrive.co.za',
+        to: [contactEmail],
+        subject: `⚠️ Manual action required — Finance application for ${applicantName}`,
+        html,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error(JSON.stringify({
+        level: 'error',
+        type: 'dealer_notify_email_failed',
+        salesRef,
+        status: res.status,
+        error: err,
+        ts: new Date().toISOString(),
+      }));
+    } else {
+      console.log(JSON.stringify({
+        level: 'info',
+        type: 'dealer_notify_email_sent',
+        salesRef,
+        to: contactEmail,
+        ts: new Date().toISOString(),
+      }));
+    }
+  } catch (err) {
+    console.error(JSON.stringify({
+      level: 'error',
+      type: 'dealer_notify_email_error',
+      salesRef,
+      error: err.message,
+      ts: new Date().toISOString(),
+    }));
+  }
+}
+
 // ── Edith XML Builder ─────────────────────────────────────────
 
 function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
   const d = data;
   const isBike = dealer.financeType === 'bike';
 
-  // ── Bank Accounts block (Policy-level, before Client) — bike only ──
   const bankAccountsXml = (isBike && d.bankBranchCode) ? `
         <tem:BankAccounts>
           <tem:BankAccount>
@@ -158,7 +424,6 @@ function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
           </tem:BankAccount>
         </tem:BankAccounts>` : '';
 
-  // ── Products array (top-level, sibling of Policy) — YONDA service fee ──
   const productsXml = isBike ? `
       <tem:Products>
         <tem:Product>
@@ -265,32 +530,41 @@ function generateSalesRef(branchCode) {
   return `${branchCode}-${Date.now()}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function parseEdithXMLResponse(xml) {
   const getTag = (tag) => {
     const match = xml.match(new RegExp(`<[^>]*${tag}[^>]*>([^<]*)<`, 'i'));
     return match ? match[1].trim() : null;
   };
-  const statusCode = parseInt(getTag('StatusCode') || getTag('ReturnCode') || '100');
+
+  // Greedy match to get the LAST StatusCode inside <response> — skips per-error StatusCodes
+  const responseStatusMatch = xml.match(/<response[^>]*>[\s\S]*<StatusCode[^>]*>([^<]*)<\/StatusCode>/i);
+  const statusCode = parseInt(responseStatusMatch?.[1] || '100');
+
   const policyNumber = getTag('PolicyNumber');
+  const systemMessage = getTag('Message');
   const errors = [];
 
-  const errorMatches = xml.matchAll(/<Error[^>]*>([\s\S]*?)<\/Error>/gi);
+  const errorMatches = xml.matchAll(/<InputError[^>]*>([\s\S]*?)<\/InputError>/gi);
   for (const m of errorMatches) {
     const fieldMatch = m[1].match(/<FieldName[^>]*>([^<]*)<\/FieldName>/i);
-    const codeMatch  = m[1].match(/<StatusCode[^>]*>([^<]*)<\/StatusCode>/i);
-    const msgMatch   = m[1].match(/<ErrorMessage[^>]*>([^<]*)<\/ErrorMessage>/i);
+    const codeMatch  = m[1].match(/<FieldStatusCode[^>]*>([^<]*)<\/FieldStatusCode>/i);
+    const msgMatch   = m[1].match(/<Description[^>]*>([^<]*)<\/Description>/i);
     if (fieldMatch) {
       errors.push({
-        FieldName:    fieldMatch[1],
+        FieldName:    fieldMatch[1].trim(),
         StatusCode:   parseInt(codeMatch?.[1] || '300'),
-        ErrorMessage: msgMatch?.[1] || '',
+        ErrorMessage: msgMatch?.[1]?.trim() || '',
       });
     }
   }
-  return { statusCode, policyNumber, errors };
+  return { statusCode, policyNumber, systemMessage, errors };
 }
 
-// ── Structured logging (Cloudflare Workers) ───────────────────
+// ── Structured logging ────────────────────────────────────────
 
 function logError(type, data, env, context = {}) {
   console.error(JSON.stringify({
