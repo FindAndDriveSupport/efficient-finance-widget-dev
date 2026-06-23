@@ -5,6 +5,15 @@
  *  SINGLE SOURCE OF TRUTH — ALL DEALER SETTINGS LIVE HERE
  *  Add a dealer, change a theme, update branch codes — all in one place.
  * ████████████████████████████████████████████████████████████████
+ *
+ * Each dealer entry controls:
+ *   - Edith branch code
+ *   - Whitelisted embed domains
+ *   - UI theme (colours, logo)
+ *   - Feature flags
+ *   - Finance type
+ *   - Edith environment (dev | prod)
+ *   - Contact email for failure notifications
  */
 
 export const DEALERS = {
@@ -16,6 +25,7 @@ export const DEALERS = {
     branchCode: 'SRT001EM',
     financeType: 'vehicle',
     edithEnv: 'dev',
+    contactEmail: 'support@findndrive.co.za',
     allowedDomains: [
       'findndrive.co.za',
       'www.findndrive.co.za',
@@ -48,6 +58,7 @@ export const DEALERS = {
     branchCode: 'KAEF001',
     financeType: 'vehicle',
     edithEnv: 'prod',
+    contactEmail: 'yvette@keitzmanfinance.co.za',
     allowedDomains: [
       'keitzmanfinance.co.za',
       'keitzman-finance.seritifinance.findndrive.co.za',
@@ -74,6 +85,7 @@ export const DEALERS = {
     branchCode: 'YOND001',
     financeType: 'bike',
     edithEnv: 'prod',
+    contactEmail: 'marketing@yonda.co.za',
     allowedDomains: [
       'yonda.co.za',
       'yonda-bike.seritifinance.findndrive.co.za',
@@ -98,6 +110,10 @@ export const DEALERS = {
 
 // ── Lookup helpers ────────────────────────────────────────────
 
+/**
+ * Get dealer config by dealerKey param or referring domain.
+ * Priority: explicit ?dealer= param → referring domain match → first dealer
+ */
 export function getDealerConfig(dealerKey, referringDomain) {
   // 1. Explicit key (from query param ?dealer=findndrive)
   if (dealerKey && DEALERS[dealerKey]) {
@@ -119,6 +135,10 @@ export function getDealerConfig(dealerKey, referringDomain) {
   return { key: firstKey, ...firstConfig };
 }
 
+/**
+ * Check whether a given origin is whitelisted for any dealer.
+ * Used by the CORS / embed middleware.
+ */
 export function isOriginAllowed(origin) {
   if (!origin) return false;
   const hostname = origin.replace(/^https?:\/\//, '').split('/')[0].split(':')[0];
