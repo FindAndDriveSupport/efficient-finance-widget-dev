@@ -16,7 +16,7 @@ import { SYSTEM_MESSAGES, parseEdithErrors } from '../utils/edithErrors.js';
 
 // YONDA Service Fee — defaults applied for financeType === 'bike'
 const YONDA_SERVICE_FEE = {
-  productOptionId: '9845',
+  productOptionId: '73921',
   price: '2990.00', // R2,990 including VAT
 };
 
