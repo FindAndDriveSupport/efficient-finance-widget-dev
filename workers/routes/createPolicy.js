@@ -16,7 +16,7 @@ import { SYSTEM_MESSAGES, parseEdithErrors } from '../utils/edithErrors.js';
 
 // YONDA Service Fee — defaults applied for financeType === 'bike'
 const YONDA_SERVICE_FEE = {
-  productOptionId: '73921',
+  productOptionId: '9845',
   price: '2990.00', // R2,990 including VAT
 };
 
@@ -46,6 +46,38 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
     dealerKey: dealerConfig.key,
     branchCode: dealerConfig.branchCode,
     edithEnv: dealerConfig.edithEnv || 'dev',
+    fields: {
+      firstName: body.firstName || null,
+      lastName: body.lastName || null,
+      idType: body.idType || null,
+      idNumber: body.idNumber ? '✓' : null,
+      mobile: body.mobileNumber ? '✓' : null,
+      email: body.emailAddress ? '✓' : null,
+      maritalStatus: body.maritalStatus || null,
+      marriageType: body.marriageType || null,
+      educationLevel: body.educationLevel || null,
+      employmentType: body.employmentType || null,
+      employerName: body.employerName ? '✓' : null,
+      occupation: body.occupation || null,
+      occupationLevel: body.occupationLevel || null,
+      industry: body.industry || null,
+      basicSalary: body.basicSalary ? '✓' : null,
+      nettSalary: body.nettSalary ? '✓' : null,
+      depositAmount: body.depositAmount ? '✓' : null,
+      address1: body.address1 ? '✓' : null,
+      suburb: body.suburb || null,
+      city: body.city || null,
+      postCode: body.postCode || null,
+      residentialStatus: body.residentialStatus || null,
+      bankBranchCode: body.bankBranchCode || null,
+      accountType: body.accountType || null,
+      accountNumber: body.bankAccountNumber ? '✓' : null,
+      nextOfKinFirst: body.nextOfKinFirstName ? '✓' : null,
+      nextOfKinLast: body.nextOfKinLastName ? '✓' : null,
+      nextOfKinMobile: body.nextOfKinMobile ? '✓' : null,
+      dataAttestation: body.dataAttestation ? '✓' : null,
+      financialAccessConsent: body.financialAccessConsent ? '✓' : null,
+    },
     ts: new Date().toISOString(),
   }));
 
@@ -69,7 +101,7 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
       fetchStatus = res.status;
       networkFailure = false;
       retryCount = attempt;
-      break; // success — got a response
+      break;
     } catch (err) {
       retryCount = attempt + 1;
       networkFailure = true;
