@@ -36,6 +36,11 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
   const companyPass = isProd ? env.EDITH_COMPANY_PASS_PROD : env.EDITH_COMPANY_PASS;
   const wsdlUrl = isProd ? env.EDITH_WSDL_URL_PROD : env.EDITH_WSDL_URL;
 
+  // Apply branch code override from frontend — for multi-branch dealer groups
+  if (body.branchCodeOverride && /^[A-Z0-9]{4,12}$/.test(body.branchCodeOverride)) {
+    dealerConfig.branchCode = body.branchCodeOverride;
+  }
+
   const salesRef = generateSalesRef(dealerConfig.branchCode);
   const xml = buildEdithXML(body, companyCode, companyPass, dealerConfig, salesRef);
 
@@ -45,6 +50,7 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
     salesRef,
     dealerKey: dealerConfig.key,
     branchCode: dealerConfig.branchCode,
+    branchOverrideApplied: !!body.branchCodeOverride,
     edithEnv: dealerConfig.edithEnv || 'dev',
     fields: {
       firstName: body.firstName || null,
@@ -127,7 +133,6 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
         edithResponse: null,
         failureReason,
         retryCount,
-        requestXml: xml,
       })
     );
     workerCtx?.waitUntil(
@@ -181,7 +186,6 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
         edithResponse: rawText,
         failureReason,
         retryCount,
-        requestXml: xml,
       })
     );
     workerCtx?.waitUntil(
@@ -384,6 +388,7 @@ async function notifyDealer({ env, dealerConfig, body, salesRef, failureReason }
         <tr><td style="padding: 6px 0; color: #6b7280;">Email</td><td style="padding: 6px 0;">${body.emailAddress || '—'}</td></tr>
         <tr><td style="padding: 6px 0; color: #6b7280;">ID Number</td><td style="padding: 6px 0;">${body.idNumber || '—'}</td></tr>
         <tr><td style="padding: 6px 0; color: #6b7280;">Est. Approval</td><td style="padding: 6px 0;">${formattedAmount}</td></tr>
+        <tr><td style="padding: 6px 0; color: #6b7280;">Branch</td><td style="padding: 6px 0; font-family: monospace;">${dealerConfig.branchCode}</td></tr>
         <tr><td style="padding: 6px 0; color: #6b7280;">Sales Ref</td><td style="padding: 6px 0; font-family: monospace;">${salesRef}</td></tr>
       </table>
 
