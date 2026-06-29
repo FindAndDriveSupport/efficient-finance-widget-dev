@@ -15,6 +15,7 @@
  *   - Edith environment (dev | prod)
  *   - Contact email for failure notifications
  *   - Billing type (transaction | fixed)
+ *   - Branches (optional — for multi-branch dealer groups)
  */
 
 export const DEALERS = {
