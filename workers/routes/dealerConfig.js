@@ -8,11 +8,12 @@
 export async function handleDealerConfig(request, ctx, jsonResponse) {
   const { env, dealerConfig, origin } = ctx;
 
-  // Only expose safe, UI-facing properties — never secrets
   return jsonResponse({
-    key:    dealerConfig.key,
-    name:   dealerConfig.name,
-    theme:  dealerConfig.theme,
-    features: dealerConfig.features,
+    key:         dealerConfig.key,
+    name:        dealerConfig.name,
+    financeType: dealerConfig.financeType,
+    theme:       dealerConfig.theme,
+    features:    dealerConfig.features,
+    branches:    dealerConfig.branches || null,
   }, 200, origin, env);
 }
