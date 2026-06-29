@@ -278,20 +278,19 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
 
 // ── Record failure in D1 ──────────────────────────────────────
 
-async function recordFailure({ env, dealerConfig, body, salesRef, edithResponse, failureReason, retryCount, requestXml }) {
+async function recordFailure({ env, dealerConfig, body, salesRef, edithResponse, failureReason, retryCount }) {
   if (!env.DB) return;
   const applicantName = [body.firstName, body.lastName].filter(Boolean).join(' ') || null;
   try {
     await env.DB.prepare(`
       INSERT INTO policy_events (
-        dealer_key, policy_number, applicant_id, sales_ref, branch_code, finance_type,
+        dealer_key, applicant_id, sales_ref, branch_code, finance_type,
         status, failure_reason, edith_response, request_payload,
         applicant_name, applicant_mobile, applicant_email, estimated_amount, retry_count
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     .bind(
       dealerConfig.key,
-      null,
       body.applicantId || null,
       salesRef,
       dealerConfig.branchCode,
@@ -526,7 +525,7 @@ function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
           ${d.occupationLevel ? `<tem:OccupationLevel>${esc(d.occupationLevel)}</tem:OccupationLevel>` : ''}
           ${d.industry       ? `<tem:Industry>${esc(d.industry)}</tem:Industry>` : ''}
           ${d.currentEmploymentStartDate ? `<tem:CurrentEmploymentStartDate>${esc(d.currentEmploymentStartDate)}</tem:CurrentEmploymentStartDate>` : ''}
-          ${d.salaryDay      ? `<tem:SalaryDay>${d.salaryDay}</tem:SalaryDay>` : ''}
+          ${d.salaryDay && Number(d.salaryDay) >= 1 && Number(d.salaryDay) <= 31 ? `<tem:SalaryDay>${Number(d.salaryDay)}</tem:SalaryDay>` : ''}
           ${d.basicSalary    ? `<tem:BasicSalary>${Number(d.basicSalary).toFixed(2)}</tem:BasicSalary>` : ''}
           ${d.nettSalary     ? `<tem:NettSalary>${Number(d.nettSalary).toFixed(2)}</tem:NettSalary>` : ''}
           ${d.bureauExpenses ? `<tem:LoanRepayments>${Number(d.bureauExpenses).toFixed(2)}</tem:LoanRepayments>` : ''}
