@@ -63,6 +63,12 @@ export default {
     const dealerKey    = request.headers.get('X-Dealer-Key') || url.searchParams.get('dealer');
     const dealerConfig = getDealerConfig(dealerKey, origin);
 
+    // Allow branch code override via query param — for multi-branch dealer groups
+    const branchOverride = url.searchParams.get('branchCode');
+    if (branchOverride && /^[A-Z0-9]{4,12}$/.test(branchOverride)) {
+      dealerConfig.branchCode = branchOverride;
+    }
+
     // Inject env + dealerConfig into a context object
     const ctx2 = { env, dealerConfig, origin, ctx };
 
