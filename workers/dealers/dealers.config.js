@@ -14,6 +14,7 @@
  *   - Finance type
  *   - Edith environment (dev | prod)
  *   - Contact email for failure notifications
+ *   - Billing type (transaction | fixed)
  */
 
 export const DEALERS = {
@@ -26,6 +27,7 @@ export const DEALERS = {
     financeType: 'vehicle',
     edithEnv: 'dev',
     contactEmail: 'support@findndrive.co.za',
+    billingType: 'transaction',
     allowedDomains: [
       'findndrive.co.za',
       'www.findndrive.co.za',
@@ -59,6 +61,7 @@ export const DEALERS = {
     financeType: 'vehicle',
     edithEnv: 'prod',
     contactEmail: 'yvette@keitzmanfinance.co.za',
+    billingType: 'fixed',
     allowedDomains: [
       'keitzmanfinance.co.za',
       'keitzman-finance.seritifinance.findndrive.co.za',
@@ -86,6 +89,7 @@ export const DEALERS = {
     financeType: 'bike',
     edithEnv: 'prod',
     contactEmail: 'marketing@yonda.co.za',
+    billingType: 'fixed',
     allowedDomains: [
       'yonda.co.za',
       'yonda-bike.seritifinance.findndrive.co.za',
@@ -93,6 +97,34 @@ export const DEALERS = {
     theme: {
       primary: '#0154fc',
       gradient: 'linear-gradient(135deg, #0154fc 0%, #0154fc 100%)',
+      fontFamily: "'Inter', sans-serif",
+      borderRadius: '12px',
+    },
+    features: {
+      showDeposit: true,
+      showCurrentFinance: true,
+      vehicleQueryParams: true,
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // North Western Motors
+  // ─────────────────────────────────────────────────────────────
+  'north-western-motors': {
+    name: 'North Western Motors',
+    branchCode: 'NWMC001',
+    financeType: 'vehicle',
+    edithEnv: 'prod',
+    contactEmail: 'denise@northwestern.co.za',
+    billingType: 'transaction',
+    allowedDomains: [
+      'northwesternmotors.co.za',
+      'north-western-motors.seritifinance.findndrive.co.za',
+      'seritifinance.findndrive.co.za',
+    ],
+    theme: {
+      primary: '#0a1361',
+      gradient: 'linear-gradient(135deg, #0a1361 0%, #0a1361 100%)',
       fontFamily: "'Inter', sans-serif",
       borderRadius: '12px',
     },
