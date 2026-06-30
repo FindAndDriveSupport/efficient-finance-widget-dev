@@ -100,7 +100,10 @@ export async function seritiRequest(path, options = {}, env, dealerKey) {
   try { data = JSON.parse(text); } catch { data = { raw: text }; }
 
   if (!response.ok) {
-    throw new Error(`Seriti API error (${response.status}): ${JSON.stringify(data)}`);
+    const err = new Error(`Seriti API error (${response.status}): ${JSON.stringify(data)}`);
+    err.status = response.status;
+    err.body = data;
+    throw err;
   }
 
   return data;
