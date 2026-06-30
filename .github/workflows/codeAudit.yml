@@ -1,42 +1,271 @@
-name: Restore Dev from Prod (one-time)
+name: Code Audit
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  restore:
+  audit:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout prod repo
-        uses: actions/checkout@v4
-        with:
-          repository: FindAndDriveSupport/efficient-finance-widget
-          token: ${{ secrets.GH_PAT }}
-          path: prod
+      - uses: actions/checkout@v4
 
-      - name: Checkout dev repo
-        uses: actions/checkout@v4
-        with:
-          repository: FindAndDriveSupport/efficient-finance-widget-dev
-          token: ${{ secrets.GH_PAT }}
-          path: dev
+      # ── createPolicy.js ──────────────────────────────────────
 
-      - name: Copy prod into dev
+      - name: "[createPolicy] No old WSDL URL"
         run: |
-          rsync -av --delete \
-            --exclude='.git/' \
-            --exclude='node_modules/' \
-            --exclude='.env' \
-            --exclude='.dev.vars' \
-            --exclude='wrangler.toml' \
-            --exclude='.github/' \
-            prod/ dev/
+          if grep -q "seritisolutions.co.za" workers/routes/createPolicy.js; then
+            echo "❌ Old WSDL URL found in createPolicy.js" && exit 1
+          fi
 
-      - name: Commit and push to dev
+      - name: "[createPolicy] No old XML namespace"
         run: |
-          cd dev
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --staged --quiet || (git commit -m "chore: restore workers/ structure from prod after accidental overwrite" && git push)
+          if grep -q "tempuri.org" workers/routes/createPolicy.js; then
+            echo "❌ Old XML namespace found in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] No debug logs"
+        run: |
+          if grep -qE "EDITH_PAYLOAD|EDITH_XML|EDITH_RAW_RESPONSE|EDITH_PARSED|console.error.*EDITH_WSDL_URL" workers/routes/createPolicy.js; then
+            echo "❌ Debug console.error logs found in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] isProd credential switching present"
+        run: |
+          if ! grep -q "isProd" workers/routes/createPolicy.js; then
+            echo "❌ Missing isProd credential switching in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] D1 write present"
+        run: |
+          if ! grep -q "policy_events" workers/routes/createPolicy.js; then
+            echo "❌ Missing D1 write in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] Spouse block present"
+        run: |
+          if ! grep -q "spouseFirstName" workers/routes/createPolicy.js; then
+            echo "❌ Missing spouse block in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] Spouse IDType present"
+        run: |
+          if ! grep -q "spouseIdType" workers/routes/createPolicy.js; then
+            echo "❌ Missing spouse IDType in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] MarriageType present"
+        run: |
+          if ! grep -q "MarriageType" workers/routes/createPolicy.js; then
+            echo "❌ Missing MarriageType in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] MarriageDate present"
+        run: |
+          if ! grep -q "MarriageDate" workers/routes/createPolicy.js; then
+            echo "❌ Missing MarriageDate in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] preQualTotal fallback present"
+        run: |
+          if ! grep -q "preQualTotal" workers/routes/createPolicy.js; then
+            echo "❌ Missing preQualTotal fallback in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] Consents use 1/0 not true/false"
+        run: |
+          if grep -q "DataAttestationInd.*true\|DataAttestationInd.*false" workers/routes/createPolicy.js; then
+            echo "❌ Consents using true/false instead of 1/0 in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] branchCodeOverride support present"
+        run: |
+          if ! grep -q "branchCodeOverride" workers/routes/createPolicy.js; then
+            echo "❌ Missing branchCodeOverride support in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] salaryDay overflow guard present"
+        run: |
+          if ! grep -q "Number(d.salaryDay) >= 1 && Number(d.salaryDay) <= 31" workers/routes/createPolicy.js; then
+            echo "❌ Missing salaryDay overflow guard in createPolicy.js" && exit 1
+          fi
+
+      - name: "[createPolicy] recordFailure does not insert policy_number"
+        run: |
+          if awk '/async function recordFailure/,/^}/' workers/routes/createPolicy.js | grep -q "policy_number"; then
+            echo "❌ recordFailure still inserting policy_number — D1 NOT NULL fix missing" && exit 1
+          fi
+
+      # ── submitDocuments.js ───────────────────────────────────
+
+      - name: "[submitDocuments] export keyword present"
+        run: |
+          if ! grep -q "export async function handleSubmitDocuments" workers/routes/submitDocuments.js; then
+            echo "❌ Missing export on handleSubmitDocuments" && exit 1
+          fi
+
+      - name: "[submitDocuments] No debug logs"
+        run: |
+          if grep -qE "SUBMIT_DOCS_WSDL_URL|EDITH_SUBMIT_DOCS_RAW" workers/routes/submitDocuments.js; then
+            echo "❌ Debug logs found in submitDocuments.js" && exit 1
+          fi
+
+      - name: "[submitDocuments] isProd credential switching present"
+        run: |
+          if ! grep -q "isProd" workers/routes/submitDocuments.js; then
+            echo "❌ Missing isProd credential switching in submitDocuments.js" && exit 1
+          fi
+
+      - name: "[submitDocuments] Validation logging present"
+        run: |
+          if ! grep -q "submit_docs_validation" workers/routes/submitDocuments.js; then
+            echo "❌ Missing validation logging in submitDocuments.js" && exit 1
+          fi
+
+      # ── prediction.js ────────────────────────────────────────
+
+      - name: "[prediction] 409 PATCH fallback present"
+        run: |
+          if ! grep -q "409" workers/routes/prediction.js; then
+            echo "❌ Missing 409 PATCH fallback in prediction.js" && exit 1
+          fi
+
+      - name: "[prediction] systemDown detection present"
+        run: |
+          if ! grep -q "systemDown" workers/routes/prediction.js; then
+            echo "❌ Missing systemDown detection in prediction.js" && exit 1
+          fi
+
+      - name: "[prediction] idasFailed detection present"
+        run: |
+          if ! grep -q "idasFailed" workers/routes/prediction.js; then
+            echo "❌ Missing idasFailed detection in prediction.js" && exit 1
+          fi
+
+      - name: "[prediction] livingExpenses not in payload"
+        run: |
+          if grep -q "livingExpenses.*seritiPayload\|seritiPayload.*livingExpenses" workers/routes/prediction.js; then
+            echo "❌ livingExpenses incorrectly included in prediction payload" && exit 1
+          fi
+
+      - name: "[prediction] Request logging present"
+        run: |
+          if ! grep -q "seriti_prediction_request" workers/routes/prediction.js; then
+            echo "❌ Missing request logging in prediction.js" && exit 1
+          fi
+
+      # ── preQual.js ───────────────────────────────────────────
+
+      - name: "[preQual] hasExistingFinance mapped"
+        run: |
+          if ! grep -q "hasExistingFinance" workers/routes/preQual.js; then
+            echo "❌ Missing hasExistingFinance mapping in preQual.js" && exit 1
+          fi
+
+      - name: "[preQual] deposit mapped from depositAmount"
+        run: |
+          if ! grep -q "depositAmount" workers/routes/preQual.js; then
+            echo "❌ Missing depositAmount mapping in preQual.js" && exit 1
+          fi
+
+      - name: "[preQual] currentInstalment mapped from financeAmount"
+        run: |
+          if ! grep -q "financeAmount" workers/routes/preQual.js; then
+            echo "❌ Missing financeAmount mapping in preQual.js" && exit 1
+          fi
+
+      # ── seritiAuth.js ────────────────────────────────────────
+
+      - name: "[seritiAuth] Response logging present"
+        run: |
+          if ! grep -q "seriti_response" workers/services/seritiAuth.js; then
+            echo "❌ Missing response logging in seritiAuth.js" && exit 1
+          fi
+
+      - name: "[seritiAuth] export on seritiRequest present"
+        run: |
+          if ! grep -q "export async function seritiRequest" workers/services/seritiAuth.js; then
+            echo "❌ Missing export on seritiRequest in seritiAuth.js" && exit 1
+          fi
+
+      # ── worker.js ────────────────────────────────────────────
+
+      - name: "[worker] export default present"
+        run: |
+          if ! grep -q "export default" workers/worker.js; then
+            echo "❌ Missing export default in worker.js" && exit 1
+          fi
+
+      - name: "[worker] Referer fallback for Origin present"
+        run: |
+          if ! grep -q "Referer" workers/worker.js; then
+            echo "❌ Missing Referer fallback for Origin in worker.js" && exit 1
+          fi
+
+      - name: "[worker] No debug logs"
+        run: |
+          if grep -q "test alert\|cors_debug" workers/worker.js; then
+            echo "❌ Debug log found in worker.js" && exit 1
+          fi
+
+      - name: "[worker] branchCode query param override present"
+        run: |
+          if ! grep -q "branchOverride" workers/worker.js; then
+            echo "❌ Missing branchCode query param override in worker.js" && exit 1
+          fi
+
+      # ── dealerConfig.js ──────────────────────────────────────
+
+      - name: "[dealerConfig] branches exposed to frontend"
+        run: |
+          if ! grep -q "branches" workers/routes/dealerConfig.js; then
+            echo "❌ Missing branches field in dealerConfig.js response" && exit 1
+          fi
+
+      - name: "[dealerConfig] financeType exposed to frontend"
+        run: |
+          if ! grep -q "financeType" workers/routes/dealerConfig.js; then
+            echo "❌ Missing financeType field in dealerConfig.js response" && exit 1
+          fi
+
+      # ── dealers.config.js ────────────────────────────────────
+
+      - name: "[dealers] keitzman-finance present"
+        run: |
+          if ! grep -q "keitzman-finance" workers/dealers/dealers.config.js; then
+            echo "❌ keitzman-finance missing from dealers.config.js" && exit 1
+          fi
+
+      - name: "[dealers] yonda-bike present"
+        run: |
+          if ! grep -q "yonda-bike" workers/dealers/dealers.config.js; then
+            echo "❌ yonda-bike missing from dealers.config.js" && exit 1
+          fi
+
+      - name: "[dealers] north-western-motors present"
+        run: |
+          if ! grep -q "north-western-motors" workers/dealers/dealers.config.js; then
+            echo "❌ north-western-motors missing from dealers.config.js" && exit 1
+          fi
+
+      - name: "[dealers] edithEnv present"
+        run: |
+          if ! grep -q "edithEnv" workers/dealers/dealers.config.js; then
+            echo "❌ Missing edithEnv in dealers.config.js" && exit 1
+          fi
+
+      - name: "[dealers] billingType present"
+        run: |
+          if ! grep -q "billingType" workers/dealers/dealers.config.js; then
+            echo "❌ Missing billingType in dealers.config.js" && exit 1
+          fi
+
+      - name: "[dealers] isOriginAllowed present"
+        run: |
+          if ! grep -q "isOriginAllowed" workers/dealers/dealers.config.js; then
+            echo "❌ Missing isOriginAllowed in dealers.config.js" && exit 1
+          fi
+
+      - name: "✅ All checks passed"
+        run: echo "✅ Code audit passed — all files look correct"
