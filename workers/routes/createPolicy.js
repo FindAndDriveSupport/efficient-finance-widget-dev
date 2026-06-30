@@ -486,7 +486,7 @@ function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
         ${d.vehicleModel   ? `<tem:Model>${esc(d.vehicleModel)}</tem:Model>` : ''}
         ${d.vehicleMm      ? `<tem:VehicleCode>${esc(d.vehicleMm)}</tem:VehicleCode>` : ''}
         ${(d.vehicleMake || d.vehicleModel) ? `<tem:VehicleDescription>${esc([d.vehicleMake, d.vehicleModel].filter(Boolean).join(' '))}</tem:VehicleDescription>` : ''}
-        ${d.estimatedApprovalAmount ? `<tem:RetailPrice>${d.estimatedApprovalAmount}</tem:RetailPrice>` : d.preQualTotal ? `<tem:RetailPrice>${d.preQualTotal}</tem:RetailPrice>` : ''}
+        ${(Number(d.estimatedApprovalAmount) > 0) ? `<tem:RetailPrice>${Number(d.estimatedApprovalAmount).toFixed(2)}</tem:RetailPrice>` : (d.idType !== 'RSA ID' && Number(d.preQualTotal) > 0) ? `<tem:RetailPrice>${Number(d.preQualTotal).toFixed(2)}</tem:RetailPrice>` : ''}
         <tem:NewUsed>USED</tem:NewUsed>
         ${d.spouseFirstName && d.maritalStatus?.toUpperCase() === 'MARRIED' ? `
         <tem:Spouse>
