@@ -1,126 +1,42 @@
-name: Code Audit
+name: Restore Dev from Prod (one-time)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
-  audit:
+  restore:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout prod repo
+        uses: actions/checkout@v4
+        with:
+          repository: FindAndDriveSupport/efficient-finance-widget
+          token: ${{ secrets.GH_PAT }}
+          path: prod
 
-      # ── createPolicy.js ──────────────────────────────────────
+      - name: Checkout dev repo
+        uses: actions/checkout@v4
+        with:
+          repository: FindAndDriveSupport/efficient-finance-widget-dev
+          token: ${{ secrets.GH_PAT }}
+          path: dev
 
-      - name: "[createPolicy] No old WSDL URL"
+      - name: Copy prod into dev
         run: |
-          if grep -q "seritisolutions.co.za" src/routes/createPolicy.js; then
-            echo "❌ Old WSDL URL found in createPolicy.js" && exit 1
-          fi
+          rsync -av --delete \
+            --exclude='.git/' \
+            --exclude='node_modules/' \
+            --exclude='.env' \
+            --exclude='.dev.vars' \
+            --exclude='wrangler.toml' \
+            --exclude='.github/' \
+            prod/ dev/
 
-      - name: "[createPolicy] No old XML namespace"
+      - name: Commit and push to dev
         run: |
-          if grep -q "tempuri.org" src/routes/createPolicy.js; then
-            echo "❌ Old XML namespace found in createPolicy.js" && exit 1
-          fi
-
-      - name: "[createPolicy] No debug logs"
-        run: |
-          if grep -qE "EDITH_PAYLOAD|EDITH_XML|EDITH_RAW_RESPONSE|EDITH_PARSED|console.error.*EDITH_WSDL_URL" src/routes/createPolicy.js; then
-            echo "❌ Debug console.error logs found in createPolicy.js" && exit 1
-          fi
-
-      - name: "[createPolicy] isProd credential switching present"
-        run: |
-          if ! grep -q "isProd" src/routes/createPolicy.js; then
-            echo "❌ Missing isProd credential switching in createPolicy.js" && exit 1
-          fi
-
-      - name: "[createPolicy] D1 write present"
-        run: |
-          if ! grep -q "policy_events" src/routes/createPolicy.js; then
-            echo "❌ Missing D1 write in createPolicy.js" && exit 1
-          fi
-
-      - name: "[createPolicy] Spouse block present"
-        run: |
-          if ! grep -q "spouseFirstName" src/routes/createPolicy.js; then
-            echo "❌ Missing spouse block in createPolicy.js" && exit 1
-          fi
-
-      - name: "[createPolicy] preQualTotal fallback present"
-        run: |
-          if ! grep -q "preQualTotal" src/routes/createPolicy.js; then
-            echo "❌ Missing preQualTotal fallback in createPolicy.js" && exit 1
-          fi
-
-      - name: "[createPolicy] Consents use 1/0 not true/false"
-        run: |
-          if grep -q "DataAttestationInd.*true\|DataAttestationInd.*false" src/routes/createPolicy.js; then
-            echo "❌ Consents using true/false instead of 1/0 in createPolicy.js" && exit 1
-          fi
-
-      # ── submitDocuments.js ───────────────────────────────────
-
-      - name: "[submitDocuments] export keyword present"
-        run: |
-          if ! grep -q "export async function handleSubmitDocuments" src/routes/submitDocuments.js; then
-            echo "❌ Missing export on handleSubmitDocuments" && exit 1
-          fi
-
-      - name: "[submitDocuments] No debug logs"
-        run: |
-          if grep -qE "SUBMIT_DOCS_WSDL_URL|EDITH_SUBMIT_DOCS_RAW" src/routes/submitDocuments.js; then
-            echo "❌ Debug logs found in submitDocuments.js" && exit 1
-          fi
-
-      - name: "[submitDocuments] isProd credential switching present"
-        run: |
-          if ! grep -q "isProd" src/routes/submitDocuments.js; then
-            echo "❌ Missing isProd credential switching in submitDocuments.js" && exit 1
-          fi
-
-      # ── prediction.js ────────────────────────────────────────
-
-      - name: "[prediction] 409 PATCH fallback present"
-        run: |
-          if ! grep -q "409" src/routes/prediction.js; then
-            echo "❌ Missing 409 PATCH fallback in prediction.js" && exit 1
-          fi
-
-      - name: "[prediction] systemDown detection present"
-        run: |
-          if ! grep -q "systemDown" src/routes/prediction.js; then
-            echo "❌ Missing systemDown detection in prediction.js" && exit 1
-          fi
-
-      - name: "[prediction] idasFailed detection present"
-        run: |
-          if ! grep -q "idasFailed" src/routes/prediction.js; then
-            echo "❌ Missing idasFailed detection in prediction.js" && exit 1
-          fi
-
-      - name: "[prediction] livingExpenses not in payload"
-        run: |
-          if grep -q "livingExpenses.*seritiPayload\|seritiPayload.*livingExpenses" src/routes/prediction.js; then
-            echo "❌ livingExpenses incorrectly included in prediction payload" && exit 1
-          fi
-
-      # ── seritiAuth.js ────────────────────────────────────────
-
-      - name: "[seritiAuth] Response logging present"
-        run: |
-          if ! grep -q "seriti_response" src/services/seritiAuth.js; then
-            echo "❌ Missing response logging in seritiAuth.js" && exit 1
-          fi
-
-      - name: "[seritiAuth] export on seritiRequest present"
-        run: |
-          if ! grep -q "export async function seritiRequest" src/services/seritiAuth.js; then
-            echo "❌ Missing export on seritiRequest in seritiAuth.js" && exit 1
-          fi
-
-      # ── worker.js ────────────────────────────────────────────
-
-      -
+          cd dev
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || (git commit -m "chore: restore workers/ structure from prod after accidental overwrite" && git push)
