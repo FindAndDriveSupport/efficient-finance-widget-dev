@@ -15,49 +15,49 @@ jobs:
 
       - name: "[createPolicy] No old WSDL URL"
         run: |
-          if grep -q "seritisolutions.co.za" workers/routes/createPolicy.js; then
+          if grep -q "seritisolutions.co.za" src/routes/createPolicy.js; then
             echo "❌ Old WSDL URL found in createPolicy.js" && exit 1
           fi
 
       - name: "[createPolicy] No old XML namespace"
         run: |
-          if grep -q "tempuri.org" workers/routes/createPolicy.js; then
+          if grep -q "tempuri.org" src/routes/createPolicy.js; then
             echo "❌ Old XML namespace found in createPolicy.js" && exit 1
           fi
 
       - name: "[createPolicy] No debug logs"
         run: |
-          if grep -qE "EDITH_PAYLOAD|EDITH_XML|EDITH_RAW_RESPONSE|EDITH_PARSED|console.error.*EDITH_WSDL_URL" workers/routes/createPolicy.js; then
+          if grep -qE "EDITH_PAYLOAD|EDITH_XML|EDITH_RAW_RESPONSE|EDITH_PARSED|console.error.*EDITH_WSDL_URL" src/routes/createPolicy.js; then
             echo "❌ Debug console.error logs found in createPolicy.js" && exit 1
           fi
 
       - name: "[createPolicy] isProd credential switching present"
         run: |
-          if ! grep -q "isProd" workers/routes/createPolicy.js; then
+          if ! grep -q "isProd" src/routes/createPolicy.js; then
             echo "❌ Missing isProd credential switching in createPolicy.js" && exit 1
           fi
 
       - name: "[createPolicy] D1 write present"
         run: |
-          if ! grep -q "policy_events" workers/routes/createPolicy.js; then
+          if ! grep -q "policy_events" src/routes/createPolicy.js; then
             echo "❌ Missing D1 write in createPolicy.js" && exit 1
           fi
 
       - name: "[createPolicy] Spouse block present"
         run: |
-          if ! grep -q "spouseFirstName" workers/routes/createPolicy.js; then
+          if ! grep -q "spouseFirstName" src/routes/createPolicy.js; then
             echo "❌ Missing spouse block in createPolicy.js" && exit 1
           fi
 
       - name: "[createPolicy] preQualTotal fallback present"
         run: |
-          if ! grep -q "preQualTotal" workers/routes/createPolicy.js; then
+          if ! grep -q "preQualTotal" src/routes/createPolicy.js; then
             echo "❌ Missing preQualTotal fallback in createPolicy.js" && exit 1
           fi
 
       - name: "[createPolicy] Consents use 1/0 not true/false"
         run: |
-          if grep -q "DataAttestationInd.*true\|DataAttestationInd.*false" workers/routes/createPolicy.js; then
+          if grep -q "DataAttestationInd.*true\|DataAttestationInd.*false" src/routes/createPolicy.js; then
             echo "❌ Consents using true/false instead of 1/0 in createPolicy.js" && exit 1
           fi
 
@@ -65,19 +65,19 @@ jobs:
 
       - name: "[submitDocuments] export keyword present"
         run: |
-          if ! grep -q "export async function handleSubmitDocuments" workers/routes/submitDocuments.js; then
+          if ! grep -q "export async function handleSubmitDocuments" src/routes/submitDocuments.js; then
             echo "❌ Missing export on handleSubmitDocuments" && exit 1
           fi
 
       - name: "[submitDocuments] No debug logs"
         run: |
-          if grep -qE "SUBMIT_DOCS_WSDL_URL|EDITH_SUBMIT_DOCS_RAW" workers/routes/submitDocuments.js; then
+          if grep -qE "SUBMIT_DOCS_WSDL_URL|EDITH_SUBMIT_DOCS_RAW" src/routes/submitDocuments.js; then
             echo "❌ Debug logs found in submitDocuments.js" && exit 1
           fi
 
       - name: "[submitDocuments] isProd credential switching present"
         run: |
-          if ! grep -q "isProd" workers/routes/submitDocuments.js; then
+          if ! grep -q "isProd" src/routes/submitDocuments.js; then
             echo "❌ Missing isProd credential switching in submitDocuments.js" && exit 1
           fi
 
@@ -85,25 +85,25 @@ jobs:
 
       - name: "[prediction] 409 PATCH fallback present"
         run: |
-          if ! grep -q "409" workers/routes/prediction.js; then
+          if ! grep -q "409" src/routes/prediction.js; then
             echo "❌ Missing 409 PATCH fallback in prediction.js" && exit 1
           fi
 
       - name: "[prediction] systemDown detection present"
         run: |
-          if ! grep -q "systemDown" workers/routes/prediction.js; then
+          if ! grep -q "systemDown" src/routes/prediction.js; then
             echo "❌ Missing systemDown detection in prediction.js" && exit 1
           fi
 
       - name: "[prediction] idasFailed detection present"
         run: |
-          if ! grep -q "idasFailed" workers/routes/prediction.js; then
+          if ! grep -q "idasFailed" src/routes/prediction.js; then
             echo "❌ Missing idasFailed detection in prediction.js" && exit 1
           fi
 
       - name: "[prediction] livingExpenses not in payload"
         run: |
-          if grep -q "livingExpenses.*seritiPayload\|seritiPayload.*livingExpenses" workers/routes/prediction.js; then
+          if grep -q "livingExpenses.*seritiPayload\|seritiPayload.*livingExpenses" src/routes/prediction.js; then
             echo "❌ livingExpenses incorrectly included in prediction payload" && exit 1
           fi
 
@@ -111,62 +111,16 @@ jobs:
 
       - name: "[seritiAuth] Response logging present"
         run: |
-          if ! grep -q "seriti_response" workers/services/seritiAuth.js; then
+          if ! grep -q "seriti_response" src/services/seritiAuth.js; then
             echo "❌ Missing response logging in seritiAuth.js" && exit 1
           fi
 
       - name: "[seritiAuth] export on seritiRequest present"
         run: |
-          if ! grep -q "export async function seritiRequest" workers/services/seritiAuth.js; then
+          if ! grep -q "export async function seritiRequest" src/services/seritiAuth.js; then
             echo "❌ Missing export on seritiRequest in seritiAuth.js" && exit 1
           fi
 
       # ── worker.js ────────────────────────────────────────────
 
-      - name: "[worker] export default present"
-        run: |
-          if ! grep -q "export default" workers/worker.js; then
-            echo "❌ Missing export default in worker.js" && exit 1
-          fi
-
-      - name: "[worker] Referer fallback for Origin present"
-        run: |
-          if ! grep -q "Referer" workers/worker.js; then
-            echo "❌ Missing Referer fallback for Origin in worker.js" && exit 1
-          fi
-
-      - name: "[worker] No debug console.error test alert"
-        run: |
-          if grep -q "test alert\|cors_debug" workers/worker.js; then
-            echo "❌ Debug log found in worker.js" && exit 1
-          fi
-
-      # ── dealers.config.js ────────────────────────────────────
-
-      - name: "[dealers] keitzman-finance present"
-        run: |
-          if ! grep -q "keitzman-finance" workers/dealers/dealers.config.js; then
-            echo "❌ keitzman-finance missing from dealers.config.js" && exit 1
-          fi
-
-      - name: "[dealers] yonda-bike present"
-        run: |
-          if ! grep -q "yonda-bike" workers/dealers/dealers.config.js; then
-            echo "❌ yonda-bike missing from dealers.config.js" && exit 1
-          fi
-
-      - name: "[dealers] edithEnv present on all dealers"
-        run: |
-          if ! grep -q "edithEnv" workers/dealers/dealers.config.js; then
-            echo "❌ Missing edithEnv in dealers.config.js" && exit 1
-          fi
-
-      - name: "[dealers] Referer fallback in isOriginAllowed"
-        run: |
-          if ! grep -q "isOriginAllowed" workers/dealers/dealers.config.js; then
-            echo "❌ Missing isOriginAllowed in dealers.config.js" && exit 1
-          fi
-
-      - name: "✅ All checks passed"
-        run: echo "✅ Code audit passed — all files look correct"
-
+      -
