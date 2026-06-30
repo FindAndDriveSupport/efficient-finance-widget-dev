@@ -25,6 +25,28 @@ export async function handleGetApplicant(request, ctx, jsonResponse) {
       dealerConfig?.key
     );
   } catch (err) {
+    // Seriti returns 404 when the applicant genuinely doesn't exist yet —
+    // this is expected (e.g. user hasn't completed pre-qualification),
+    // not a system failure. Only treat non-404 errors as 502.
+    if (err.status === 404 || /not found/i.test(err.message)) {
+      console.log(JSON.stringify({
+        level: 'info',
+        type: 'applicant_not_found',
+        applicantId,
+        dealerKey: dealerConfig?.key,
+        ts: new Date().toISOString(),
+      }));
+      return jsonResponse({ error: 'Applicant not found' }, 404, origin, env);
+    }
+
+    console.error(JSON.stringify({
+      level: 'error',
+      type: 'get_applicant_error',
+      applicantId,
+      dealerKey: dealerConfig?.key,
+      error: err.message,
+      ts: new Date().toISOString(),
+    }));
     return jsonResponse({ error: 'Seriti API error', details: err.message }, 502, origin, env);
   }
 
