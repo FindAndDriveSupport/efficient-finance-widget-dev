@@ -11,6 +11,7 @@ jobs:
       - name: Checkout prod repo
         uses: actions/checkout@v4
         with:
+          repository: FindAndDriveSupport/efficient-finance-widget
           token: ${{ secrets.GH_PAT }}
           path: prod
 
