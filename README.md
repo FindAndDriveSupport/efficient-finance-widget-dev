@@ -1,48 +1,97 @@
-# E-fficient Finance Widget
+# E-fficient Finance Widget — Backend
 
-A 3-step vehicle-finance pre-qualification + application wizard, built with TanStack Start + React 19.
+Cloudflare Worker that securely proxies all API calls between the React frontend and:
+- **Seriti API** (`seritiapi.findndrive.co.za`) — pre-qualification & prediction
+- **Edith Webservice** (`seritisolutions.co.za`) — policy creation
 
-## Embedding the Widget
+All secrets live in Cloudflare Worker environment variables. The frontend never touches an API key.
 
-### Option 1 — iFrame
+---
 
-```html
-<iframe
-  src="https://widget.yoursite.co.za?dealer=findndrive&make=Toyota&model=Corolla&mm=12345678"
-  width="100%" height="750" frameborder="0" style="border-radius:16px;"
-></iframe>
+## Quick Start
+
+### 1. Install Wrangler
+```bash
+npm install
+npm install -g wrangler
+wrangler login
 ```
 
-### Option 2 — Script tag (recommended)
-
-```html
-<!-- 1. Load the script once in <head> -->
-<script src="https://widget.yoursite.co.za/embed.js"></script>
-
-<!-- 2. Place the widget element anywhere -->
-<efficient-finance-widget
-  dealer="findndrive"
-  make="Toyota"
-  model="Corolla"
-  mm="12345678"
-></efficient-finance-widget>
+### 2. Create KV namespace (token cache)
+```bash
+wrangler kv:namespace create SERITI_CACHE
+# Copy the ID printed, paste into wrangler.toml → kv_namespaces[0].id
 ```
 
-### Supported query/attribute parameters
+### 3. Set secrets
+```bash
+wrangler secret put SERITI_API_KEY      # Seriti API key
+wrangler secret put SERITI_API_SECRET   # Seriti API secret
+wrangler secret put EDITH_COMPANY_CODE  # Edith CompanyCode (from Agatha Design)
+wrangler secret put EDITH_COMPANY_PASS  # Edith CompanyPassword (from Agatha Design)
+```
 
-| Param   | Description                        | Example     |
-|---------|------------------------------------|-------------|
-| dealer  | Dealer key (controls theme)        | findndrive  |
-| make    | Vehicle make                       | Toyota      |
-| model   | Vehicle model                      | Corolla     |
-| mm      | Mead & McGrouther 8-digit code     | 12345678    |
-| branch  | Override branch code (optional)    | FND001      |
+### 4. Add your dealers
+Edit `src/dealers/dealers.config.js`:
+- Add branch codes, allowed domains, theme colours
+- This is the **only file you need to touch** to onboard a new dealer
 
-## Environment
+### 5. Run locally
+```bash
+npm run dev
+# Worker available at http://localhost:8787
+```
 
-Copy `.env.example` to `.env` and set:
+### 6. Deploy
+```bash
+npm run deploy:prod
+```
 
-- `VITE_WORKER_URL` — base URL of the backend Worker (no trailing slash). When unset, the widget uses deterministic mock responses so the preview keeps working.
-- `VITE_MIXPANEL_TOKEN` — optional; when set, page-view and step events are tracked.
+---
 
-All API calls send the `X-Dealer-Key` header derived from the `dealer` query parameter (see `src/lib/worker.ts`).
+## Dealer Management
+
+All dealer configuration lives in one file: `src/dealers/dealers.config.js`
+
+To add a new dealer:
+1. Copy an existing dealer block
+2. Set `branchCode` (from Agatha Design / Edith onboarding)
+3. Add `allowedDomains` (their website domains)
+4. Customise `theme` (primary colour, logo URL)
+5. Deploy
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/dealer/config` | Returns theme + features (safe, no secrets) |
+| POST | `/api/financing/pre-qualification` | Step 1: Pre-qual |
+| POST | `/api/financing/prediction` | Step 2: Prediction |
+| GET | `/api/financing/applicant?applicantId=` | Post-consent applicant data |
+| POST | `/api/policy/create` | Step 3: Create Edith policy |
+
+---
+
+## CI/CD
+
+GitHub Actions (`.github/workflows/deploy.yml`) runs on every push to `main`:
+1. Lint + test
+2. Deploy Worker to Cloudflare
+3. Build + deploy React app to Cloudflare Pages
+
+**Required GitHub Secrets:**
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `VITE_WORKER_URL`
+
+---
+
+## Security Notes
+
+- API keys are **never** in code or git — Cloudflare Worker secrets only
+- Domain whitelisting enforced on every request via `isOriginAllowed()`
+- Edith credentials (CompanyCode/Password) injected server-side; frontend never sees them
+- Bearer token refreshed automatically via KV cache (never expires client-side)
+- Structured error logging to Cloudflare — `wrangler tail` for live logs
