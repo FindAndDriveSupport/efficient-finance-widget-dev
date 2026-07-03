@@ -4,6 +4,15 @@
  */
 
 import { seritiRequest } from '../services/seritiAuth.js';
+import { fetchApplicantRaw } from './getApplicant.js';
+
+// Map prediction labels per spec — moved above the try/catch so the
+// IDAS-failure fallback below can reuse it too.
+const predictionMap = {
+  Low:    { label: 'In progress',  headline: "Let's move forward with your application!", body: "We'll contact you to guide you through the next steps and explore the best options together." },
+  Medium: { label: 'Good news',    headline: 'You have a good chance of qualifying!',     body: 'Your profile looks promising. Complete your application and we\'ll be in touch shortly.' },
+  High:   { label: 'Great news',   headline: 'You\'re likely to qualify!',                body: 'Your profile looks great. Submit your application and we\'ll help you get into your next car.' },
+};
 
 export async function handlePrediction(request, ctx, jsonResponse) {
   const { env, dealerConfig, origin } = ctx;
@@ -74,7 +83,9 @@ export async function handlePrediction(request, ctx, jsonResponse) {
         return jsonResponse({ error: 'Seriti API error', details: patchErr.message }, 502, origin, env);
       }
     } else {
-      // Check if the error is an IDAS bureau failure (no credit profile found)
+      // Check if the error is an IDAS bureau failure (no credit profile found,
+      // or — as seen 2026-07-03 — an unhandled server-side FormatException
+      // when IDAS returns an address record with a blank date field)
       const isIdasFailure = msg.includes('500') && msg.includes('Idas');
       const isSystemDown = !isIdasFailure && (msg.includes('502') || msg.includes('503') || msg.includes('500') || msg.includes('unavailable') || msg.includes('Bad Gateway'));
 
@@ -87,6 +98,58 @@ export async function handlePrediction(request, ctx, jsonResponse) {
           error: msg.substring(0, 500),
           ts: new Date().toISOString(),
         }));
+
+        // Fallback: Seriti may already hold a prediction for this applicant
+        // from an earlier successful run (e.g. during pre-qualification, or
+        // a prior attempt before this bug started tripping). Only trust it
+        // if the income figures on file still match what's being submitted
+        // now — otherwise a stale prediction could mislead the applicant.
+        try {
+          const applicantData = await fetchApplicantRaw(applicantId, env, dealerConfig?.key);
+          const cached = applicantData?.applicantPrediction;
+          const financeOnFile = applicantData?.applicant?.applicantFinance || {};
+
+          const grossMatches = Number(financeOnFile.grossIncome) === seritiPayload.grossIncome;
+          const netMatches = Number(financeOnFile.netIncome) === seritiPayload.netIncome;
+
+          if (cached?.chancesOfApproval && grossMatches && netMatches) {
+            console.log(JSON.stringify({
+              level: 'info',
+              type: 'seriti_prediction_fallback_used',
+              dealerKey: dealerConfig?.key,
+              applicantId,
+              ts: new Date().toISOString(),
+            }));
+
+            return jsonResponse({
+              prediction: predictionMap[cached.chancesOfApproval] || predictionMap.Low,
+              reason: cached.improvementSuggestionFull,
+              estimatedApprovalAmount: cached.estimatedApprovalAmount,
+              monthlyInstalment: cached.estimatedFinanceSpend,
+              source: 'cached',
+            }, 200, origin, env);
+          }
+
+          console.log(JSON.stringify({
+            level: 'info',
+            type: 'seriti_prediction_fallback_unavailable',
+            dealerKey: dealerConfig?.key,
+            applicantId,
+            reason: !cached?.chancesOfApproval ? 'no_cached_prediction' : 'income_mismatch',
+            ts: new Date().toISOString(),
+          }));
+        } catch (fallbackErr) {
+          console.error(JSON.stringify({
+            level: 'error',
+            type: 'seriti_prediction_fallback_failed',
+            dealerKey: dealerConfig?.key,
+            applicantId,
+            error: fallbackErr.message,
+            ts: new Date().toISOString(),
+          }));
+          // fall through to the idasFailed response below
+        }
+
         return jsonResponse({
           error: 'No credit bureau information found for this ID number.',
           code: 500,
@@ -129,13 +192,6 @@ export async function handlePrediction(request, ctx, jsonResponse) {
       systemDown: true,
     }, 502, origin, env);
   }
-
-  // Map prediction labels per spec
-  const predictionMap = {
-    Low:    { label: 'In progress',  headline: "Let's move forward with your application!", body: "We'll contact you to guide you through the next steps and explore the best options together." },
-    Medium: { label: 'Good news',    headline: 'You have a good chance of qualifying!',     body: 'Your profile looks promising. Complete your application and we\'ll be in touch shortly.' },
-    High:   { label: 'Great news',   headline: 'You\'re likely to qualify!',                body: 'Your profile looks great. Submit your application and we\'ll help you get into your next car.' },
-  };
 
   const predResponse = result.predictionResponse || {};
   const predNum = predResponse.prediction ?? -1;
