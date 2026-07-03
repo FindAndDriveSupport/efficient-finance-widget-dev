@@ -7,6 +7,24 @@
  */
 import { seritiRequest } from '../services/seritiAuth.js';
 
+/**
+ * Fetches the raw Seriti applicant payload (unmapped) so callers other than
+ * the HTTP route — e.g. the prediction.js IDAS-failure fallback — can read
+ * fields like applicantPrediction and applicantFinance directly, without
+ * going through the trimmed/mapped shape returned to the frontend.
+ *
+ * Throws on any error (including 404) — callers decide how to handle it.
+ */
+export async function fetchApplicantRaw(applicantId, env, dealerKey) {
+  const result = await seritiRequest(
+    `/api/Financing/GetApplicantById?id=${encodeURIComponent(applicantId)}`,
+    { method: 'GET' },
+    env,
+    dealerKey
+  );
+  return result.response || {};
+}
+
 export async function handleGetApplicant(request, ctx, jsonResponse) {
   const { env, origin, dealerConfig } = ctx;
   const url = new URL(request.url);
@@ -16,14 +34,9 @@ export async function handleGetApplicant(request, ctx, jsonResponse) {
     return jsonResponse({ error: 'Missing applicantId' }, 400, origin, env);
   }
 
-  let result;
+  let response;
   try {
-    result = await seritiRequest(
-      `/api/Financing/GetApplicantById?id=${encodeURIComponent(applicantId)}`,
-      { method: 'GET' },
-      env,
-      dealerConfig?.key
-    );
+    response = await fetchApplicantRaw(applicantId, env, dealerConfig?.key);
   } catch (err) {
     // Seriti returns 404 when the applicant genuinely doesn't exist yet —
     // this is expected (e.g. user hasn't completed pre-qualification),
@@ -50,10 +63,11 @@ export async function handleGetApplicant(request, ctx, jsonResponse) {
     return jsonResponse({ error: 'Seriti API error', details: err.message }, 502, origin, env);
   }
 
-  const applicant  = result.response?.applicant || {};
+  const applicant  = response.applicant || {};
   const address    = applicant.applicantAddress || {};
   const employment = applicant.applicantEmploymentHistory || {};
   const finance    = applicant.applicantFinance || {};
+  const prediction = response.applicantPrediction || null;
 
   return jsonResponse({
     // Personal
@@ -90,5 +104,14 @@ export async function handleGetApplicant(request, ctx, jsonResponse) {
     nokFirst:   applicant.nextOfKinFirstName,
     nokLast:    applicant.nextOfKinLastName,
     nokContact: applicant.nextOfKinContactNumber,
+    // Cached prediction (if Seriti already ran one for this applicant) —
+    // used as a fallback source when a live /prediction call fails.
+    cachedPrediction: prediction ? {
+      chancesOfApproval:        prediction.chancesOfApproval,
+      estimatedApprovalAmount:  prediction.estimatedApprovalAmount,
+      estimatedFinanceSpend:    prediction.estimatedFinanceSpend,
+      estimatedInsuranceSpend:  prediction.estimatedInsuranceSpend,
+      improvementSuggestionFull: prediction.improvementSuggestionFull,
+    } : null,
   }, 200, origin, env);
 }
