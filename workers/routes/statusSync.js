@@ -242,6 +242,15 @@ async function getPolicyStatusList(wsdlUrl, companyCode, companyPass, startDate)
 </soap:Envelope>`;
 
   const rawText = await soapFetch(wsdlUrl, xml, 'GetPolicyStatusList');
+
+  // TEMP DEBUG LOGGING — remove once XML tag names are confirmed correct.
+  console.log(JSON.stringify({
+    level: 'info',
+    type: 'edith_status_list_raw_response',
+    rawText,
+    ts: new Date().toISOString(),
+  }));
+
   return parseStatusListXML(rawText);
 }
 
