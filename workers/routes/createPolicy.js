@@ -500,13 +500,13 @@ function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
         <tem:Relative>
           ${d.nextOfKinFirstName ? `<tem:FirstName>${esc(d.nextOfKinFirstName)}</tem:FirstName>` : ''}
           ${d.nextOfKinLastName  ? `<tem:LastName>${esc(d.nextOfKinLastName)}</tem:LastName>` : ''}
-          ${d.nextOfKinMobile    ? `<tem:MobileNumber>${esc(d.nextOfKinMobile)}</tem:MobileNumber>` : ''}
+          ${d.nextOfKinMobile    ? `<tem:MobileNumber>${esc(normaliseMobile(d.nextOfKinMobile))}</tem:MobileNumber>` : ''}
         </tem:Relative>` : ''}
        <tem:Client>
           ${d.title         ? `<tem:Title>${esc(d.title.toUpperCase())}</tem:Title>` : ''}
           ${d.firstName     ? `<tem:FirstName>${esc(d.firstName)}</tem:FirstName>` : ''}
           <tem:LastName>${esc(d.lastName)}</tem:LastName>
-          ${d.mobileNumber  ? `<tem:MobileNumber>${d.mobileNumber}</tem:MobileNumber>` : ''}
+          ${d.mobileNumber  ? `<tem:MobileNumber>${esc(normaliseMobile(d.mobileNumber))}</tem:MobileNumber>` : ''}
           ${d.emailAddress  ? `<tem:EmailAddress>${esc(d.emailAddress)}</tem:EmailAddress>` : ''}
           ${d.idNumber      ? `<tem:IDType>${esc(d.idType || 'RSA ID')}</tem:IDType><tem:IDNumber>${d.idNumber}</tem:IDNumber>` : '<tem:IDType>FOREIGN NATIONAL</tem:IDType>'}
           ${d.gender        ? `<tem:Gender>${esc(d.gender.toUpperCase())}</tem:Gender>` : ''}
@@ -562,6 +562,17 @@ function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+/**
+ * Normalises a mobile number to 10-digit SA format starting with 0.
+ * Handles: +27821234567 → 0821234567, 27821234567 → 0821234567
+ */
+function normaliseMobile(mobile) {
+  const digits = String(mobile).replace(/\D/g, '');
+  if (digits.startsWith('27') && digits.length === 11) return '0' + digits.slice(2);
+  if (digits.startsWith('0') && digits.length === 10) return digits;
+  return digits; // return as-is and let Edith validate
+}
+
 function generateSalesRef(branchCode) {
   return `${branchCode}-${Date.now()}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
 }
@@ -576,7 +587,6 @@ function parseEdithXMLResponse(xml) {
     return match ? match[1].trim() : null;
   };
 
-  // Greedy match to get the LAST StatusCode inside <response> — skips per-error StatusCodes
   const responseStatusMatch = xml.match(/<response[^>]*>[\s\S]*<StatusCode[^>]*>([^<]*)<\/StatusCode>/i);
   const statusCode = parseInt(responseStatusMatch?.[1] || '100');
 
@@ -599,8 +609,6 @@ function parseEdithXMLResponse(xml) {
   }
   return { statusCode, policyNumber, systemMessage, errors };
 }
-
-// ── Structured logging ────────────────────────────────────────
 
 function logError(type, data, env, context = {}) {
   console.error(JSON.stringify({
