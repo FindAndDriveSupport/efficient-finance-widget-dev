@@ -13,6 +13,7 @@ import { handleDealerConfig }    from './routes/dealerConfig.js';
 import { handleAddressSearch }   from './routes/addressSearch.js';
 import { handleGetPolicies }     from './routes/getPolicies.js';
 import { handleLookups }         from './routes/lookups.js';
+import { runStatusSync }         from './routes/statusSync.js';
 
 // ── CORS headers ──────────────────────────────────────────────
 
@@ -109,5 +110,12 @@ export default {
       console.error('[Worker] Unhandled error:', err);
       return jsonResponse({ error: 'Internal server error', details: err.message }, 500, origin, env);
     }
+  },
+
+  // ── Scheduled handler (cron) ──────────────────────────────────
+  // Daily sync of policy application/finance/transaction status from Edith
+  // into policy_events. See routes/statusSync.js for implementation.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runStatusSync(env));
   },
 };
