@@ -35,6 +35,8 @@
  * run against a real Edith response and adjust tag names if needed.
  */
 
+import { DEALERS } from '../dealers/dealers.config.js';
+
 const RETRY_LIMIT = 2;
 const RETRY_DELAY_MS = 2000;
 const DETAIL_FETCH_CONCURRENCY = 5;
@@ -43,38 +45,52 @@ const KV_LAST_RUN_KEY = 'edith:last_status_sync';
 export async function runStatusSync(env) {
   const now = new Date();
   const lastRun = await getLastRunDate(env);
+  const result = await processStatusSync(env, lastRun);
+  await setLastRunDate(env, now);
+  return result;
+}
+
+// One-time (or repeatable) historical backfill — queries Edith all the way
+// back to a fixed early date instead of "since last run", so policies whose
+// last edit predates this sync system ever running still get picked up.
+// Does NOT touch the incremental KV timestamp, so it won't interfere with
+// the daily cron's "since last run" window.
+export async function runFullBackfill(env, sinceDate = '01-jan-2020 00:00') {
+  return processStatusSync(env, sinceDate);
+}
+
+async function processStatusSync(env, startDate) {
   const { companyCode, companyPass, wsdlUrl } = selectEdithCredentials(env);
 
   console.log(JSON.stringify({
     level: 'info',
     type: 'status_sync_start',
-    startDate: lastRun,
-    ts: now.toISOString(),
+    startDate,
+    ts: new Date().toISOString(),
   }));
 
   let statusList;
   try {
-    statusList = await getPolicyStatusList(wsdlUrl, companyCode, companyPass, lastRun);
+    statusList = await getPolicyStatusList(wsdlUrl, companyCode, companyPass, startDate);
   } catch (err) {
     logError('status_sync_list_failed', { message: err.message }, env);
-    return { checked: 0, updated: 0, detailFetches: 0, error: err.message };
+    return { checked: 0, updated: 0, inserted: 0, detailFetches: 0, error: err.message };
   }
 
   if (!statusList.length) {
-    console.log(JSON.stringify({ level: 'info', type: 'status_sync_no_changes', ts: now.toISOString() }));
-    await setLastRunDate(env, now);
-    return { checked: 0, updated: 0, detailFetches: 0 };
+    console.log(JSON.stringify({ level: 'info', type: 'status_sync_no_changes', ts: new Date().toISOString() }));
+    return { checked: 0, updated: 0, inserted: 0, detailFetches: 0 };
   }
 
   console.log(JSON.stringify({
     level: 'info',
     type: 'status_sync_changes_found',
     count: statusList.length,
-    ts: now.toISOString(),
+    ts: new Date().toISOString(),
   }));
 
   const policyNumbers = statusList.map((p) => p.PolicyNumber).filter(Boolean);
-  const existingRows = await getExistingAccessDates(env, policyNumbers);
+  const existingRows = await getExistingRows(env, policyNumbers);
 
   const needsDetail = [];
   const statusOnly = [];
@@ -93,6 +109,7 @@ export async function runStatusSync(env) {
   }
 
   let updatedCount = 0;
+  let insertedCount = 0;
   let detailFetchCount = 0;
 
   for (let i = 0; i < needsDetail.length; i += DETAIL_FETCH_CONCURRENCY) {
@@ -113,39 +130,55 @@ export async function runStatusSync(env) {
       const details = result.value;
       detailFetchCount++;
 
-      await upsertPolicyStatus(env, {
+      const wrote = await upsertPolicyStatus(env, {
         policyNumber: entry.PolicyNumber,
+        salesRef: entry.SalesReferenceNumber,
+        branchCode: entry.BranchCode,
         applicationStatus: entry.Status,
         financeStatus: details?.FinanceStatus ?? null,
+        financeCompany: details?.FinanceCompany ?? null,
         transactionStatus: details?.TransactionStatus ?? null,
         lastAccessDate: entry.LastAccessDate,
       });
-      updatedCount++;
+      if (wrote === 'inserted') insertedCount++;
+      else if (wrote === 'updated') updatedCount++;
     }
   }
 
   for (const entry of statusOnly) {
-    await upsertPolicyStatus(env, {
+    const wrote = await upsertPolicyStatus(env, {
       policyNumber: entry.PolicyNumber,
+      salesRef: entry.SalesReferenceNumber,
+      branchCode: entry.BranchCode,
       applicationStatus: entry.Status,
       financeStatus: undefined,
+      financeCompany: undefined,
       transactionStatus: undefined,
       lastAccessDate: entry.LastAccessDate,
     });
-    updatedCount++;
+    if (wrote === 'inserted') insertedCount++;
+    else if (wrote === 'updated') updatedCount++;
   }
-
-  await setLastRunDate(env, now);
 
   console.log(JSON.stringify({
     level: 'info',
     type: 'status_sync_done',
     updated: updatedCount,
+    inserted: insertedCount,
     detailFetches: detailFetchCount,
     ts: new Date().toISOString(),
   }));
 
-  return { checked: statusList.length, updated: updatedCount, detailFetches: detailFetchCount };
+  return { checked: statusList.length, updated: updatedCount, inserted: insertedCount, detailFetches: detailFetchCount };
+}
+
+// ---------- Dealer resolution (for backfill inserts) ----------
+
+function resolveDealerKeyByBranchCode(branchCode) {
+  for (const [key, config] of Object.entries(DEALERS)) {
+    if (config.branchCode === branchCode) return key;
+  }
+  return null;
 }
 
 // ---------- Credential selection (mirrors createPolicy.js) ----------
@@ -185,47 +218,120 @@ function formatEdithDate(date) {
 
 // ---------- D1 helpers (policy_events table) ----------
 
-async function getExistingAccessDates(env, policyNumbers) {
+const SQL_IN_BATCH_SIZE = 100; // stay well under SQLite's ~999 bound-parameter limit
+
+async function getExistingRows(env, policyNumbers) {
   const map = new Map();
   if (!policyNumbers.length) return map;
 
-  const placeholders = policyNumbers.map(() => '?').join(',');
-  const stmt = env.DB.prepare(
-    `SELECT policy_number, last_access_date FROM policy_events WHERE policy_number IN (${placeholders})`
-  ).bind(...policyNumbers);
+  for (let i = 0; i < policyNumbers.length; i += SQL_IN_BATCH_SIZE) {
+    const batch = policyNumbers.slice(i, i + SQL_IN_BATCH_SIZE);
+    const placeholders = batch.map(() => '?').join(',');
+    const stmt = env.DB.prepare(
+      `SELECT id, policy_number, last_access_date FROM policy_events WHERE policy_number IN (${placeholders})`
+    ).bind(...batch);
 
-  const { results } = await stmt.all();
-  for (const row of results) {
-    map.set(row.policy_number, row);
+    const { results } = await stmt.all();
+    for (const row of results) {
+      map.set(row.policy_number, row);
+    }
   }
   return map;
 }
 
-async function upsertPolicyStatus(env, { policyNumber, applicationStatus, financeStatus, transactionStatus, lastAccessDate }) {
+// Returns 'updated', 'inserted', or 'skipped' (if a new row was needed but
+// the dealer couldn't be resolved from branchCode, e.g. unknown/retired
+// branch code not present in dealers.config.js).
+async function upsertPolicyStatus(env, {
+  policyNumber, salesRef, branchCode, applicationStatus,
+  financeStatus, financeCompany, transactionStatus, lastAccessDate,
+}) {
   const now = new Date().toISOString();
-  const sets = ['application_status = ?', 'last_access_date = ?', 'status_last_checked = ?'];
-  const values = [applicationStatus, lastAccessDate, now];
 
-  if (financeStatus !== undefined) {
-    sets.push('finance_status = ?');
-    values.push(financeStatus);
+  const existing = await env.DB.prepare(
+    `SELECT id FROM policy_events WHERE policy_number = ? LIMIT 1`
+  ).bind(policyNumber).first();
+
+  if (existing) {
+    const sets = ['application_status = ?', 'last_access_date = ?', 'status_last_checked = ?'];
+    const values = [applicationStatus, lastAccessDate, now];
+
+    if (financeStatus !== undefined) {
+      sets.push('finance_status = ?');
+      values.push(financeStatus);
+    }
+    if (financeCompany !== undefined) {
+      sets.push('finance_company = ?');
+      values.push(financeCompany);
+    }
+    if (transactionStatus !== undefined) {
+      sets.push('transaction_status = ?');
+      values.push(transactionStatus);
+    }
+
+    values.push(policyNumber);
+
+    await env.DB.prepare(
+      `UPDATE policy_events SET ${sets.join(', ')} WHERE policy_number = ?`
+    ).bind(...values).run();
+
+    return 'updated';
   }
-  if (transactionStatus !== undefined) {
-    sets.push('transaction_status = ?');
-    values.push(transactionStatus);
+
+  // No existing row — this policy predates (or was missed by) createPolicy.js's
+  // write. Backfill a new row, resolving dealer_key from branchCode since
+  // that's all Edith gives us here.
+  const dealerKey = resolveDealerKeyByBranchCode(branchCode);
+  if (!dealerKey) {
+    logError('status_sync_unresolved_dealer', { policyNumber, branchCode }, env);
+    return 'skipped';
   }
 
-  values.push(policyNumber);
+  await env.DB.prepare(`
+    INSERT INTO policy_events (
+      dealer_key, policy_number, sales_ref, branch_code,
+      status, created_at,
+      application_status, finance_status, finance_company, transaction_status,
+      last_access_date, status_last_checked
+    ) VALUES (?, ?, ?, ?, 'synced', ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    dealerKey,
+    policyNumber,
+    salesRef || null,
+    branchCode || null,
+    now,
+    applicationStatus || null,
+    financeStatus ?? null,
+    financeCompany ?? null,
+    transactionStatus ?? null,
+    lastAccessDate || null,
+    now,
+  ).run();
 
-  await env.DB.prepare(
-    `UPDATE policy_events SET ${sets.join(', ')} WHERE policy_number = ?`
-  ).bind(...values).run();
+  return 'inserted';
 }
 
 // ---------- Edith SOAP calls ----------
 
 async function getPolicyStatusList(wsdlUrl, companyCode, companyPass, startDate) {
-  const xml = `<?xml version="1.0" encoding="utf-8"?>
+  const xml = buildStatusListXML(companyCode, companyPass, startDate);
+  const rawText = await soapFetch(wsdlUrl, xml, 'GetPolicyStatusList');
+  return parseStatusListXML(rawText);
+}
+
+// Browser-debuggable variant — returns the raw XML text directly instead of
+// parsing it, so it can be viewed in a browser tab with no terminal/log
+// access needed. Called from the /api/debug/raw-status-list route.
+export async function debugFetchStatusListXML(env) {
+  const lastRun = await getLastRunDate(env);
+  const { companyCode, companyPass, wsdlUrl } = selectEdithCredentials(env);
+  const xml = buildStatusListXML(companyCode, companyPass, lastRun);
+  const rawText = await soapFetch(wsdlUrl, xml, 'GetPolicyStatusList');
+  return { requestXml: xml, responseXml: rawText, startDate: lastRun };
+}
+
+function buildStatusListXML(companyCode, companyPass, startDate) {
+  return `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://ws.edith.co.za/EdithServices/PolicyServicesV300">
   <soap:Body>
     <tem:GetPolicyStatusList>
@@ -240,22 +346,24 @@ async function getPolicyStatusList(wsdlUrl, companyCode, companyPass, startDate)
     </tem:GetPolicyStatusList>
   </soap:Body>
 </soap:Envelope>`;
-
-  const rawText = await soapFetch(wsdlUrl, xml, 'GetPolicyStatusList');
-
-  // TEMP DEBUG LOGGING — remove once XML tag names are confirmed correct.
-  console.log(JSON.stringify({
-    level: 'info',
-    type: 'edith_status_list_raw_response',
-    rawText,
-    ts: new Date().toISOString(),
-  }));
-
-  return parseStatusListXML(rawText);
 }
 
 async function getPolicyDetails(wsdlUrl, companyCode, companyPass, policyNumber) {
-  const xml = `<?xml version="1.0" encoding="utf-8"?>
+  const xml = buildPolicyDetailsXML(companyCode, companyPass, policyNumber);
+  const rawText = await soapFetch(wsdlUrl, xml, 'GetPolicyDetails');
+  return parsePolicyDetailsXML(rawText);
+}
+
+// Browser-debuggable variant — returns raw XML directly for inspection.
+export async function debugFetchPolicyDetailsXML(env, policyNumber) {
+  const { companyCode, companyPass, wsdlUrl } = selectEdithCredentials(env);
+  const xml = buildPolicyDetailsXML(companyCode, companyPass, policyNumber);
+  const rawText = await soapFetch(wsdlUrl, xml, 'GetPolicyDetails');
+  return { requestXml: xml, responseXml: rawText };
+}
+
+function buildPolicyDetailsXML(companyCode, companyPass, policyNumber) {
+  return `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://ws.edith.co.za/EdithServices/PolicyServicesV300">
   <soap:Body>
     <tem:GetPolicyDetails>
@@ -268,9 +376,6 @@ async function getPolicyDetails(wsdlUrl, companyCode, companyPass, policyNumber)
     </tem:GetPolicyDetails>
   </soap:Body>
 </soap:Envelope>`;
-
-  const rawText = await soapFetch(wsdlUrl, xml, 'GetPolicyDetails');
-  return parsePolicyDetailsXML(rawText);
 }
 
 async function soapFetch(wsdlUrl, xml, action) {
@@ -301,9 +406,7 @@ async function soapFetch(wsdlUrl, xml, action) {
 
 function parseStatusListXML(xml) {
   const items = [];
-  // Assumes each list entry is wrapped in a repeating block — adjust tag
-  // name ("PolicyStatusDetail" is a guess) once real XML is seen.
-  const blocks = xml.matchAll(/<PolicyStatusDetail[^>]*>([\s\S]*?)<\/PolicyStatusDetail>/gi);
+  const blocks = xml.matchAll(/<PolicyStatus>([\s\S]*?)<\/PolicyStatus>/gi);
   for (const b of blocks) {
     const block = b[1];
     items.push({
@@ -320,8 +423,50 @@ function parseStatusListXML(xml) {
 }
 
 function parsePolicyDetailsXML(xml) {
+  // NB: Real Edith responses do NOT include top-level <FinanceStatus> or
+  // <TransactionStatus> tags on the Policy object (confirmed against a live
+  // response) — despite the spec PDF listing them as Policy fields.
+  //
+  // Finance decisions instead live nested under:
+  //   <FinanceApplications><FinanceApplicationDetail>
+  //     <CompanyName>WESBANK</CompanyName>
+  //     <LatestApplicationStatus>DECLINED</LatestApplicationStatus>
+  //     <LatestApplicationDate>...</LatestApplicationDate>
+  //   </FinanceApplicationDetail>...
+  // — one entry per finance house that's been applied to. We take the
+  // entry with the most recent LatestApplicationDate that actually has a
+  // status, and use its LatestApplicationStatus/CompanyName as our
+  // finance_status / finance_company.
+  //
+  // TransactionStatus appears to genuinely not exist until later in the
+  // deal lifecycle (it's a manually-set dropdown field) — if/when a real
+  // response does include it, the getTag() fallback below will pick it up
+  // without any code change needed.
+
+  const financeApps = [];
+  const appBlocks = xml.matchAll(/<FinanceApplicationDetail>([\s\S]*?)<\/FinanceApplicationDetail>/gi);
+  for (const b of appBlocks) {
+    const block = b[1];
+    const status = getTag(block, 'LatestApplicationStatus');
+    if (!status) continue; // not yet applied to this finance house
+    financeApps.push({
+      companyName: getTag(block, 'CompanyName'),
+      status,
+      date: getTag(block, 'LatestApplicationDate'),
+    });
+  }
+
+  // Most recent by date (string ISO comparison works fine here)
+  financeApps.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const latestFinanceApp = financeApps[0] || null;
+
   return {
-    FinanceStatus: getTag(xml, 'FinanceStatus'),
+    // Prefer top-level tags — confirmed present once a deal progresses far
+    // enough (e.g. PAID OUT / DELIVERED). Fall back to the nested
+    // FinanceApplications array for earlier-stage deals where the
+    // top-level fields haven't been set yet.
+    FinanceStatus: getTag(xml, 'FinanceStatus') || latestFinanceApp?.status || null,
+    FinanceCompany: getTag(xml, 'FinanceCompanyName') || latestFinanceApp?.companyName || null,
     TransactionStatus: getTag(xml, 'TransactionStatus'),
     PolicyNumber: getTag(xml, 'PolicyNumber'),
   };
