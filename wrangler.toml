@@ -18,3 +18,8 @@ id       = "16c7bf807bc0445ab0420a16f2352c0d"
 binding = "DB"
 database_name = "postal-codes-db"
 database_id = "a518623c-f74b-4889-98da-d9ddda0ff632"
+
+# Daily Edith policy status sync — runs at 02:00 UTC
+[triggers]
+crons = ["0 2 * * *"]
+
