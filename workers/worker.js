@@ -13,7 +13,7 @@ import { handleDealerConfig }    from './routes/dealerConfig.js';
 import { handleAddressSearch }   from './routes/addressSearch.js';
 import { handleGetPolicies }     from './routes/getPolicies.js';
 import { handleLookups }         from './routes/lookups.js';
-import { runStatusSync }         from './routes/statusSync.js';
+import { runStatusSync, runFullBackfill, debugFetchStatusListXML, debugFetchPolicyDetailsXML } from './routes/statusSync.js';
 
 // ── CORS headers ──────────────────────────────────────────────
 
@@ -102,6 +102,84 @@ export default {
       }
       if (path === '/api/policies' && method === 'GET') {
         return handleGetPolicies(request, ctx2, jsonResponse);
+      }
+
+      // ── TEMPORARY DEBUG ROUTE — remove after testing statusSync ──
+      // Manually triggers the daily Edith status sync over HTTP, since
+      // Cloudflare's dashboard has no "run cron now" button. Gated behind
+      // a secret query param so it can't be triggered by randoms hitting
+      // the URL. Set DEBUG_SYNC_KEY via `wrangler secret put DEBUG_SYNC_KEY`.
+      if (path === '/api/debug/run-status-sync' && method === 'GET') {
+        const key = url.searchParams.get('key');
+        if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
+          return jsonResponse({ error: 'Not found' }, 404, origin, env);
+        }
+        const result = await runStatusSync(env);
+        return jsonResponse(result, 200, origin, env);
+      }
+
+      // ── TEMPORARY DEBUG ROUTE — view raw Edith XML directly in browser ──
+      // Same key gate as above. Returns the raw SOAP request/response as
+      // plain text so it can be read on mobile with no terminal/log access.
+      if (path === '/api/debug/raw-status-list' && method === 'GET') {
+        const key = url.searchParams.get('key');
+        if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
+          return jsonResponse({ error: 'Not found' }, 404, origin, env);
+        }
+        try {
+          const { requestXml, responseXml, startDate } = await debugFetchStatusListXML(env);
+          const text = `startDate used: ${startDate}\n\n--- REQUEST XML ---\n${requestXml}\n\n--- RESPONSE XML ---\n${responseXml}`;
+          return new Response(text, {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders(origin, env) },
+          });
+        } catch (err) {
+          return new Response(`Error calling Edith: ${err.message}`, {
+            status: 500,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders(origin, env) },
+          });
+        }
+      }
+
+      // ── TEMPORARY DEBUG ROUTE — view raw GetPolicyDetails XML in browser ──
+      // Usage: /api/debug/raw-policy-details?key=...&policyNumber=ZAYOND0013130665
+      if (path === '/api/debug/raw-policy-details' && method === 'GET') {
+        const key = url.searchParams.get('key');
+        if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
+          return jsonResponse({ error: 'Not found' }, 404, origin, env);
+        }
+        const policyNumber = url.searchParams.get('policyNumber');
+        if (!policyNumber) {
+          return new Response('Missing ?policyNumber=... param', { status: 400 });
+        }
+        try {
+          const { requestXml, responseXml } = await debugFetchPolicyDetailsXML(env, policyNumber);
+          const text = `--- REQUEST XML ---\n${requestXml}\n\n--- RESPONSE XML ---\n${responseXml}`;
+          return new Response(text, {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders(origin, env) },
+          });
+        } catch (err) {
+          return new Response(`Error calling Edith: ${err.message}`, {
+            status: 500,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders(origin, env) },
+          });
+        }
+      }
+
+      // ── TEMPORARY DEBUG ROUTE — trigger one-time historical backfill ──
+      // Catches up policies whose last Edith edit predates this sync system,
+      // which the daily incremental sync will never see (it only looks
+      // "since last run"). Safe to re-run — existing rows just get updated.
+      // Optional ?since=dd-mmm-yyyy HH:nn to override the default 2020 start.
+      if (path === '/api/debug/backfill-status' && method === 'GET') {
+        const key = url.searchParams.get('key');
+        if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
+          return jsonResponse({ error: 'Not found' }, 404, origin, env);
+        }
+        const sinceDate = url.searchParams.get('since');
+        const result = sinceDate ? await runFullBackfill(env, sinceDate) : await runFullBackfill(env);
+        return jsonResponse(result, 200, origin, env);
       }
 
       return jsonResponse({ error: 'Not found' }, 404, origin, env);
