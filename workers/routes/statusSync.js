@@ -35,7 +35,12 @@
  * run against a real Edith response and adjust tag names if needed.
  */
 
-import { DEALERS } from '../dealers/dealers.config.js';
+// Hard floor — no policy created before this date should ever be synced or
+// backfilled, regardless of what startDate/since is passed in. Edits to old
+// deals (e.g. a Nov 2025 policy touched today) would otherwise still show
+// up in an EDIT-type GetPolicyStatusList diff even with a later startDate,
+// since that filters by edit date, not create date.
+const EARLIEST_ALLOWED_CREATE_DATE = new Date('2026-06-10T00:00:00');
 
 const RETRY_LIMIT = 2;
 const RETRY_DELAY_MS = 2000;
@@ -55,7 +60,7 @@ export async function runStatusSync(env) {
 // last edit predates this sync system ever running still get picked up.
 // Does NOT touch the incremental KV timestamp, so it won't interfere with
 // the daily cron's "since last run" window.
-export async function runFullBackfill(env, sinceDate = '01-jan-2020 00:00') {
+export async function runFullBackfill(env, sinceDate = '10-jun-2026 00:00') {
   return processStatusSync(env, sinceDate);
 }
 
@@ -77,6 +82,22 @@ async function processStatusSync(env, startDate) {
     return { checked: 0, updated: 0, inserted: 0, detailFetches: 0, error: err.message };
   }
 
+  const beforeFilterCount = statusList.length;
+  statusList = statusList.filter((entry) => {
+    if (!entry.CreateDate) return true; // no create date info — don't silently drop, let it through
+    return new Date(entry.CreateDate) >= EARLIEST_ALLOWED_CREATE_DATE;
+  });
+  const filteredOutCount = beforeFilterCount - statusList.length;
+  if (filteredOutCount > 0) {
+    console.log(JSON.stringify({
+      level: 'info',
+      type: 'status_sync_filtered_pre_cutoff',
+      filteredOutCount,
+      cutoff: EARLIEST_ALLOWED_CREATE_DATE.toISOString(),
+      ts: new Date().toISOString(),
+    }));
+  }
+
   if (!statusList.length) {
     console.log(JSON.stringify({ level: 'info', type: 'status_sync_no_changes', ts: new Date().toISOString() }));
     return { checked: 0, updated: 0, inserted: 0, detailFetches: 0 };
@@ -91,6 +112,25 @@ async function processStatusSync(env, startDate) {
 
   const policyNumbers = statusList.map((p) => p.PolicyNumber).filter(Boolean);
   const existingRows = await getExistingRows(env, policyNumbers);
+
+  // Only sync policies that originated in the widget (i.e. already have a
+  // row with a non-null applicant_id). Anything created directly in Edith,
+  // outside the widget, has no way to be tied to a dealer/applicant here —
+  // skip it entirely rather than inserting a partial/unlinked row.
+  const beforeOwnershipFilter = statusList.length;
+  statusList = statusList.filter((entry) => {
+    const existing = existingRows.get(entry.PolicyNumber);
+    return existing && existing.applicant_id != null;
+  });
+  const skippedNonWidgetCount = beforeOwnershipFilter - statusList.length;
+  if (skippedNonWidgetCount > 0) {
+    console.log(JSON.stringify({
+      level: 'info',
+      type: 'status_sync_skipped_non_widget_policies',
+      skippedNonWidgetCount,
+      ts: new Date().toISOString(),
+    }));
+  }
 
   const needsDetail = [];
   const statusOnly = [];
@@ -138,6 +178,10 @@ async function processStatusSync(env, startDate) {
         financeStatus: details?.FinanceStatus ?? null,
         financeCompany: details?.FinanceCompany ?? null,
         transactionStatus: details?.TransactionStatus ?? null,
+        applicantName: details?.ApplicantName ?? null,
+        applicantMobile: details?.ApplicantMobile ?? null,
+        applicantEmail: details?.ApplicantEmail ?? null,
+        estimatedAmount: details?.EstimatedAmount ?? null,
         lastAccessDate: entry.LastAccessDate,
       });
       if (wrote === 'inserted') insertedCount++;
@@ -154,6 +198,10 @@ async function processStatusSync(env, startDate) {
       financeStatus: undefined,
       financeCompany: undefined,
       transactionStatus: undefined,
+      applicantName: undefined,
+      applicantMobile: undefined,
+      applicantEmail: undefined,
+      estimatedAmount: undefined,
       lastAccessDate: entry.LastAccessDate,
     });
     if (wrote === 'inserted') insertedCount++;
@@ -170,15 +218,6 @@ async function processStatusSync(env, startDate) {
   }));
 
   return { checked: statusList.length, updated: updatedCount, inserted: insertedCount, detailFetches: detailFetchCount };
-}
-
-// ---------- Dealer resolution (for backfill inserts) ----------
-
-function resolveDealerKeyByBranchCode(branchCode) {
-  for (const [key, config] of Object.entries(DEALERS)) {
-    if (config.branchCode === branchCode) return key;
-  }
-  return null;
 }
 
 // ---------- Credential selection (mirrors createPolicy.js) ----------
@@ -228,7 +267,7 @@ async function getExistingRows(env, policyNumbers) {
     const batch = policyNumbers.slice(i, i + SQL_IN_BATCH_SIZE);
     const placeholders = batch.map(() => '?').join(',');
     const stmt = env.DB.prepare(
-      `SELECT id, policy_number, last_access_date FROM policy_events WHERE policy_number IN (${placeholders})`
+      `SELECT id, policy_number, applicant_id, last_access_date FROM policy_events WHERE policy_number IN (${placeholders})`
     ).bind(...batch);
 
     const { results } = await stmt.all();
@@ -242,73 +281,59 @@ async function getExistingRows(env, policyNumbers) {
 // Returns 'updated', 'inserted', or 'skipped' (if a new row was needed but
 // the dealer couldn't be resolved from branchCode, e.g. unknown/retired
 // branch code not present in dealers.config.js).
+// Update-only now — the caller (processStatusSync) has already filtered
+// statusList down to policies with an existing widget-originated row
+// (non-null applicant_id), so a missing row here should never happen in
+// practice. The guard below is defensive only.
 async function upsertPolicyStatus(env, {
-  policyNumber, salesRef, branchCode, applicationStatus,
-  financeStatus, financeCompany, transactionStatus, lastAccessDate,
+  policyNumber, applicationStatus,
+  financeStatus, financeCompany, transactionStatus,
+  applicantName, applicantMobile, applicantEmail, estimatedAmount,
+  lastAccessDate,
 }) {
   const now = new Date().toISOString();
 
-  const existing = await env.DB.prepare(
-    `SELECT id FROM policy_events WHERE policy_number = ? LIMIT 1`
-  ).bind(policyNumber).first();
+  const sets = ['application_status = ?', 'last_access_date = ?', 'status_last_checked = ?'];
+  const values = [applicationStatus, lastAccessDate, now];
 
-  if (existing) {
-    const sets = ['application_status = ?', 'last_access_date = ?', 'status_last_checked = ?'];
-    const values = [applicationStatus, lastAccessDate, now];
-
-    if (financeStatus !== undefined) {
-      sets.push('finance_status = ?');
-      values.push(financeStatus);
-    }
-    if (financeCompany !== undefined) {
-      sets.push('finance_company = ?');
-      values.push(financeCompany);
-    }
-    if (transactionStatus !== undefined) {
-      sets.push('transaction_status = ?');
-      values.push(transactionStatus);
-    }
-
-    values.push(policyNumber);
-
-    await env.DB.prepare(
-      `UPDATE policy_events SET ${sets.join(', ')} WHERE policy_number = ?`
-    ).bind(...values).run();
-
-    return 'updated';
+  if (financeStatus !== undefined) {
+    sets.push('finance_status = ?');
+    values.push(financeStatus);
+  }
+  if (financeCompany !== undefined) {
+    sets.push('finance_company = ?');
+    values.push(financeCompany);
+  }
+  if (transactionStatus !== undefined) {
+    sets.push('transaction_status = ?');
+    values.push(transactionStatus);
+  }
+  // COALESCE: only fill these in if currently NULL — never clobber data
+  // that createPolicy.js already wrote at intake time.
+  if (applicantName !== undefined) {
+    sets.push('applicant_name = COALESCE(applicant_name, ?)');
+    values.push(applicantName);
+  }
+  if (applicantMobile !== undefined) {
+    sets.push('applicant_mobile = COALESCE(applicant_mobile, ?)');
+    values.push(applicantMobile);
+  }
+  if (applicantEmail !== undefined) {
+    sets.push('applicant_email = COALESCE(applicant_email, ?)');
+    values.push(applicantEmail);
+  }
+  if (estimatedAmount !== undefined) {
+    sets.push('estimated_amount = COALESCE(estimated_amount, ?)');
+    values.push(estimatedAmount);
   }
 
-  // No existing row — this policy predates (or was missed by) createPolicy.js's
-  // write. Backfill a new row, resolving dealer_key from branchCode since
-  // that's all Edith gives us here.
-  const dealerKey = resolveDealerKeyByBranchCode(branchCode);
-  if (!dealerKey) {
-    logError('status_sync_unresolved_dealer', { policyNumber, branchCode }, env);
-    return 'skipped';
-  }
+  values.push(policyNumber);
 
-  await env.DB.prepare(`
-    INSERT INTO policy_events (
-      dealer_key, policy_number, sales_ref, branch_code,
-      status, created_at,
-      application_status, finance_status, finance_company, transaction_status,
-      last_access_date, status_last_checked
-    ) VALUES (?, ?, ?, ?, 'synced', ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    dealerKey,
-    policyNumber,
-    salesRef || null,
-    branchCode || null,
-    now,
-    applicationStatus || null,
-    financeStatus ?? null,
-    financeCompany ?? null,
-    transactionStatus ?? null,
-    lastAccessDate || null,
-    now,
-  ).run();
+  const result = await env.DB.prepare(
+    `UPDATE policy_events SET ${sets.join(', ')} WHERE policy_number = ? AND applicant_id IS NOT NULL`
+  ).bind(...values).run();
 
-  return 'inserted';
+  return result.meta.changes > 0 ? 'updated' : 'skipped';
 }
 
 // ---------- Edith SOAP calls ----------
@@ -460,6 +485,11 @@ function parsePolicyDetailsXML(xml) {
   financeApps.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const latestFinanceApp = financeApps[0] || null;
 
+  const clientBlockMatch = xml.match(/<Client>([\s\S]*?)<\/Client>/i);
+  const clientBlock = clientBlockMatch ? clientBlockMatch[1] : '';
+  const firstName = getTag(clientBlock, 'FirstName');
+  const lastName = getTag(clientBlock, 'LastName');
+
   return {
     // Prefer top-level tags — confirmed present once a deal progresses far
     // enough (e.g. PAID OUT / DELIVERED). Fall back to the nested
@@ -469,6 +499,14 @@ function parsePolicyDetailsXML(xml) {
     FinanceCompany: getTag(xml, 'FinanceCompanyName') || latestFinanceApp?.companyName || null,
     TransactionStatus: getTag(xml, 'TransactionStatus'),
     PolicyNumber: getTag(xml, 'PolicyNumber'),
+    // Applicant/deal details — used to fill gaps on backfilled rows that
+    // never went through createPolicy.js (so never got these from the
+    // original request body). Note: Edith has no concept of our internal
+    // applicant_id, so that field can never be backfilled from here.
+    ApplicantName: [firstName, lastName].filter(Boolean).join(' ') || null,
+    ApplicantMobile: getTag(clientBlock, 'MobileNumber'),
+    ApplicantEmail: getTag(clientBlock, 'EmailAddress'),
+    EstimatedAmount: getTag(xml, 'RetailPrice'),
   };
 }
 
