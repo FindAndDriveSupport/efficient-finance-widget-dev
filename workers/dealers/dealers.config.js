@@ -33,6 +33,7 @@ export const DEALERS = {
       'findndrive.co.za',
       'www.findndrive.co.za',
       'seritifinancedev.findndrive.co.za',
+      'demo.findndrive.co.za',
       'seritifinance.findndrive.co.za',
       'localhost',
       'findanddrivesupport-e-fficient-ui.still-fire-1c3d.workers.dev',
