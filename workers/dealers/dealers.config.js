@@ -50,6 +50,7 @@ export const DEALERS = {
       showDeposit: true,
       showCurrentFinance: true,
       vehicleQueryParams: true,
+      showVehicleSelection: true,
     },
   },
 
