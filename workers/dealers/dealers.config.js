@@ -15,7 +15,13 @@
  *   - Edith environment (dev | prod)
  *   - Contact email for failure notifications
  *   - Billing type (transaction | fixed)
- *   - Branches (optional — for multi-branch dealer groups)
+ *   - Branches (optional — for a single dealer with multiple Edith branch codes)
+ *   - Group key (optional — for MULTIPLE, otherwise-independent dealer entries
+ *     that belong to the same ownership group, e.g. a "multiple websites,
+ *     multiple branches" onboarding setup). Give every entry in the same
+ *     group the identical groupKey string. Used by billing-worker to roll
+ *     up group members into one invoice line, and by the analytics
+ *     dashboard to aggregate metrics across the group.
  */
 
 export const DEALERS = {
@@ -29,11 +35,11 @@ export const DEALERS = {
     edithEnv: 'dev',
     contactEmail: 'support@findndrive.co.za',
     billingType: 'transaction',
+    groupKey: null,
     allowedDomains: [
       'findndrive.co.za',
       'www.findndrive.co.za',
       'seritifinancedev.findndrive.co.za',
-      'demo.findndrive.co.za',
       'seritifinance.findndrive.co.za',
       'localhost',
       'findanddrivesupport-e-fficient-ui.still-fire-1c3d.workers.dev',
@@ -51,7 +57,6 @@ export const DEALERS = {
       showDeposit: true,
       showCurrentFinance: true,
       vehicleQueryParams: true,
-      showVehicleSelection: true,
     },
   },
 
@@ -65,6 +70,7 @@ export const DEALERS = {
     edithEnv: 'prod',
     contactEmail: 'yvette@keitzmanfinance.co.za',
     billingType: 'fixed',
+    groupKey: null,
     allowedDomains: [
       'keitzmanfinance.co.za',
       'keitzman-finance.seritifinance.findndrive.co.za',
@@ -93,6 +99,7 @@ export const DEALERS = {
     edithEnv: 'prod',
     contactEmail: 'marketing@yonda.co.za',
     billingType: 'fixed',
+    groupKey: null,
     allowedDomains: [
       'yonda.co.za',
       'yonda-bike.seritifinance.findndrive.co.za',
@@ -120,6 +127,7 @@ export const DEALERS = {
     edithEnv: 'prod',
     contactEmail: 'denise@northwestern.co.za',
     billingType: 'transaction',
+    groupKey: null,
     allowedDomains: [
       'northwesternmotors.co.za',
       'north-western-motors.seritifinance.findndrive.co.za',
@@ -172,4 +180,31 @@ export function isOriginAllowed(origin) {
     if (config.allowedDomains.some(d => hostname.endsWith(`.${d}`))) return true;
   }
   return false;
+}
+
+/**
+ * Returns all dealer entries sharing a given groupKey, in the same
+ * { key, ...config } shape as getDealerConfig. Used by billing-worker and
+ * the analytics dashboard to roll up metrics/invoices across a dealer group.
+ */
+export function getDealersByGroup(groupKey) {
+  if (!groupKey) return [];
+  return Object.entries(DEALERS)
+    .filter(([, config]) => config.groupKey === groupKey)
+    .map(([key, config]) => ({ key, ...config }));
+}
+
+/**
+ * Returns a map of groupKey -> array of dealer entries, for every dealer
+ * that belongs to a group. Standalone dealers (groupKey === null) are
+ * excluded. Useful for iterating "all groups" in a billing or reporting run.
+ */
+export function getAllDealerGroups() {
+  const groups = new Map();
+  for (const [key, config] of Object.entries(DEALERS)) {
+    if (!config.groupKey) continue;
+    if (!groups.has(config.groupKey)) groups.set(config.groupKey, []);
+    groups.get(config.groupKey).push({ key, ...config });
+  }
+  return groups;
 }
