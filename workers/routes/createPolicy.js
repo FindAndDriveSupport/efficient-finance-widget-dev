@@ -10,9 +10,14 @@
  *   - Genuine network failures (fetch throws) → retry up to 3 times
  *   - On exhausted retries → record in D1 policy_events, email dealer, return success to user
  *   - Edith system errors (500 response) → record in D1, email dealer, return success to user
+ *
+ * On any real success (clean or with warnings), fires a fire-and-forget
+ * call to Seriti's applicant/{id}/complete endpoint to mark the lead as
+ * fully converted. This never blocks or alters the user's response.
  */
 
 import { SYSTEM_MESSAGES, parseEdithErrors } from '../utils/edithErrors.js';
+import { completeApplicant } from './completeApplicant.js';
 
 // YONDA Service Fee — defaults applied for financeType === 'bike'
 const YONDA_SERVICE_FEE = {
@@ -250,6 +255,15 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
       status: 'success',
       retryCount,
     });
+    workerCtx?.waitUntil(
+      completeApplicant({
+        env,
+        dealerConfig,
+        applicantId: body.applicantId,
+        salesRef,
+        policyNumber: edithResponse.policyNumber,
+      })
+    );
     return jsonResponse({
       success: true,
       policyNumber: edithResponse.policyNumber,
@@ -271,6 +285,15 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
     status: 'success',
     retryCount,
   });
+  workerCtx?.waitUntil(
+    completeApplicant({
+      env,
+      dealerConfig,
+      applicantId: body.applicantId,
+      salesRef,
+      policyNumber,
+    })
+  );
 
   return jsonResponse({
     success: true,
@@ -609,6 +632,8 @@ function parseEdithXMLResponse(xml) {
   }
   return { statusCode, policyNumber, systemMessage, errors };
 }
+
+// ── Structured logging ────────────────────────────────────────
 
 function logError(type, data, env, context = {}) {
   console.error(JSON.stringify({
