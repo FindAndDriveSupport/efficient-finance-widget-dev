@@ -75,6 +75,7 @@ export async function handleCreatePolicy(request, ctx, jsonResponse) {
       basicSalary: body.basicSalary ? '✓' : null,
       nettSalary: body.nettSalary ? '✓' : null,
       depositAmount: body.depositAmount ? '✓' : null,
+      retailPrice: body.retailPrice ? '✓' : null,
       address1: body.address1 ? '✓' : null,
       suburb: body.suburb || null,
       city: body.city || null,
@@ -510,6 +511,14 @@ function buildEdithXML(data, companyCode, companyPass, dealer, salesRef) {
         ${d.vehicleMm      ? `<tem:VehicleCode>${esc(d.vehicleMm)}</tem:VehicleCode>` : ''}
         ${(d.vehicleMake || d.vehicleModel) ? `<tem:VehicleDescription>${esc([d.vehicleMake, d.vehicleModel].filter(Boolean).join(' '))}</tem:VehicleDescription>` : ''}
         <tem:NewUsed>${d.vehicleCondition ? esc(d.vehicleCondition.toUpperCase()) : 'USED'}</tem:NewUsed>
+        ${/* Confirmed against Edith Policy Webservices v312.19: RetailPrice
+             is a Policy-level field ("the listed price of the vehicle"),
+             sibling to Manufacturer/Model/NewUsed — not nested under Client
+             or FinanceApplication. Edith has no separate "selling price"
+             field; Net Selling Price is RetailPrice minus Discount/
+             FleetAssist/OtherIncome/Rebate, none of which this flow uses,
+             so RetailPrice doubles as selling price here. */ ''}
+        ${d.retailPrice ? `<tem:RetailPrice>${Number(d.retailPrice).toFixed(2)}</tem:RetailPrice>` : ''}
         ${d.spouseFirstName && d.maritalStatus?.toUpperCase() === 'MARRIED' ? `
         <tem:Spouse>
           ${d.spouseFirstName ? `<tem:FirstName>${esc(d.spouseFirstName)}</tem:FirstName>` : ''}
