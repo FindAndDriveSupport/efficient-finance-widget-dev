@@ -50,12 +50,12 @@ export async function handlePreQual(request, ctx, jsonResponse) {
     // code, not part of the user-facing selection, so there's no sensible
     // "None" default for it.
     ...(body.vehicleMm ? { vehicleMm: body.vehicleMm } : {}),
-    // Optional — only sent if dealerConfig carries it. NOTE: dealers.config.js
-    // does not currently have a seritiDealershipId field on any dealer entry
-    // (that ID currently only lives in the separate LEADS_SYNC_CONFIG KV used
-    // by leads-api-worker). Add it to dealers.config.js per-dealer if Seriti's
-    // pre-qual endpoint should actually receive it.
-    ...(dealerConfig.seritiDealershipId ? { dealershipID: dealerConfig.seritiDealershipId } : {}),
+    // dealershipId — Seriti's carFinanceDealershipBranchId GUID, sourced
+    // from dealers.config.js (property name `dealershipID`, matched there
+    // by branchCode). Only included if the dealer has one on record.
+    // NOTE: the outgoing key must be exactly `dealershipId` (lowercase d,
+    // capital I, lowercase d) to match Seriti's Pre-Qualification schema.
+    ...(dealerConfig.dealershipID ? { dealershipId: dealerConfig.dealershipID } : {}),
   };
   let result;
   try {
