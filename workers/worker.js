@@ -3,7 +3,7 @@
  * Cloudflare Worker: API proxy, auth, CORS, dealer routing
  */
 
-import { isOriginAllowed, getDealerConfig } from './dealers/dealers.config.js';
+import { isOriginAllowed, getDealerConfig, getDealerByBranchCode } from './dealers/dealers.config.js';
 import { handlePreQual }         from './routes/preQual.js';
 import { handlePrediction }      from './routes/prediction.js';
 import { handleGetApplicant }    from './routes/getApplicant.js';
@@ -13,7 +13,7 @@ import { handleDealerConfig }    from './routes/dealerConfig.js';
 import { handleAddressSearch }   from './routes/addressSearch.js';
 import { handleGetPolicies }     from './routes/getPolicies.js';
 import { handleLookups }         from './routes/lookups.js';
-import { runStatusSync, runFullBackfill, debugFetchStatusListXML, debugFetchPolicyDetailsXML } from './routes/statusSync.js';
+import { runStatusSync, runFullBackfill, runPerDealerBackfill, debugFetchStatusListXML, debugFetchPolicyDetailsXML } from './routes/statusSync.js';
 
 // ── CORS headers ──────────────────────────────────────────────
 
@@ -64,10 +64,24 @@ export default {
     const dealerKey    = request.headers.get('X-Dealer-Key') || url.searchParams.get('dealer');
     const dealerConfig = getDealerConfig(dealerKey, origin);
 
-    // Allow branch code override via query param — for multi-branch dealer groups
+    // Allow branch code override via query param — for multi-branch dealer
+    // groups (e.g. Alpine Motors, where each branch has its own dealerConfig
+    // entry and its own Seriti dealershipID). branchCode and dealershipID
+    // must always travel together: if the override resolves to a known
+    // dealer entry, sync both fields from that entry so the pair sent to
+    // Seriti is never mismatched. If the override doesn't match any known
+    // branch, keep the raw branchCode override but drop dealershipID rather
+    // than risk sending a stale ID for the wrong branch.
     const branchOverride = url.searchParams.get('branchCode');
     if (branchOverride && /^[A-Z0-9]{4,12}$/.test(branchOverride)) {
-      dealerConfig.branchCode = branchOverride;
+      const overrideDealer = getDealerByBranchCode(branchOverride);
+      if (overrideDealer) {
+        dealerConfig.branchCode  = overrideDealer.branchCode;
+        dealerConfig.dealershipID = overrideDealer.dealershipID;
+      } else {
+        dealerConfig.branchCode  = branchOverride;
+        dealerConfig.dealershipID = undefined;
+      }
     }
 
     // Inject env + dealerConfig into a context object
@@ -105,10 +119,6 @@ export default {
       }
 
       // ── TEMPORARY DEBUG ROUTE — remove after testing statusSync ──
-      // Manually triggers the daily Edith status sync over HTTP, since
-      // Cloudflare's dashboard has no "run cron now" button. Gated behind
-      // a secret query param so it can't be triggered by randoms hitting
-      // the URL. Set DEBUG_SYNC_KEY via `wrangler secret put DEBUG_SYNC_KEY`.
       if (path === '/api/debug/run-status-sync' && method === 'GET') {
         const key = url.searchParams.get('key');
         if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
@@ -119,16 +129,17 @@ export default {
       }
 
       // ── TEMPORARY DEBUG ROUTE — view raw Edith XML directly in browser ──
-      // Same key gate as above. Returns the raw SOAP request/response as
-      // plain text so it can be read on mobile with no terminal/log access.
+      // ?branchCode=... optional (defaults to ALL). ?since=dd-mmm-yyyy HH:nn optional.
       if (path === '/api/debug/raw-status-list' && method === 'GET') {
         const key = url.searchParams.get('key');
         if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
           return jsonResponse({ error: 'Not found' }, 404, origin, env);
         }
+        const branchCodeParam = url.searchParams.get('branchCode') || 'ALL';
+        const sinceParam = url.searchParams.get('since') || null;
         try {
-          const { requestXml, responseXml, startDate } = await debugFetchStatusListXML(env);
-          const text = `startDate used: ${startDate}\n\n--- REQUEST XML ---\n${requestXml}\n\n--- RESPONSE XML ---\n${responseXml}`;
+          const { requestXml, responseXml, startDate, branchCode } = await debugFetchStatusListXML(env, branchCodeParam, sinceParam);
+          const text = `branchCode used: ${branchCode}\nstartDate used: ${startDate}\n\n--- REQUEST XML ---\n${requestXml}\n\n--- RESPONSE XML ---\n${responseXml}`;
           return new Response(text, {
             status: 200,
             headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders(origin, env) },
@@ -142,7 +153,6 @@ export default {
       }
 
       // ── TEMPORARY DEBUG ROUTE — view raw GetPolicyDetails XML in browser ──
-      // Usage: /api/debug/raw-policy-details?key=...&policyNumber=ZAYOND0013130665
       if (path === '/api/debug/raw-policy-details' && method === 'GET') {
         const key = url.searchParams.get('key');
         if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
@@ -168,10 +178,7 @@ export default {
       }
 
       // ── TEMPORARY DEBUG ROUTE — trigger one-time historical backfill ──
-      // Catches up policies whose last Edith edit predates this sync system,
-      // which the daily incremental sync will never see (it only looks
-      // "since last run"). Safe to re-run — existing rows just get updated.
-      // Optional ?since=dd-mmm-yyyy HH:nn to override the default 2020 start.
+      // Whole-account (branchCode: 'ALL') backfill — same as before.
       if (path === '/api/debug/backfill-status' && method === 'GET') {
         const key = url.searchParams.get('key');
         if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
@@ -180,6 +187,43 @@ export default {
         const sinceDate = url.searchParams.get('since');
         const result = sinceDate ? await runFullBackfill(env, sinceDate) : await runFullBackfill(env);
         return jsonResponse(result, 200, origin, env);
+      }
+
+      // ── TEMPORARY DEBUG ROUTE — per-dealer-scoped backfill ──
+      // Loops through every dealer in D1 with a known branch_code, calling
+      // GetPolicyStatusList individually for EACH one — rather than one
+      // branchCode: 'ALL' account-wide call. Lets the ID/mobile number
+      // promotion matching run with per-dealer visibility into results.
+      // Usage: /api/debug/backfill-per-dealer?key=...&since=10-jun-2026 00:00&offset=0&limit=8
+      // Runs in the BACKGROUND via ctx.waitUntil() — returns immediately
+      // rather than waiting synchronously for dealers to finish. Even
+      // background execution has its own time limit though (confirmed via
+      // a real "waitUntil() tasks did not complete... cancelled" warning
+      // processing all 36 dealers in one call) — use offset/limit to run
+      // in smaller batches instead, e.g. limit=8 run five times with
+      // offset=0,8,16,24,32. Each response includes nextOffset (in the
+      // eventual summary log) to chain the next call.
+      if (path === '/api/debug/backfill-per-dealer' && method === 'GET') {
+        const key = url.searchParams.get('key');
+        if (!env.DEBUG_SYNC_KEY || key !== env.DEBUG_SYNC_KEY) {
+          return jsonResponse({ error: 'Not found' }, 404, origin, env);
+        }
+        const sinceDate = url.searchParams.get('since') || undefined;
+        const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+        const limitParam = url.searchParams.get('limit');
+        const limit = limitParam ? parseInt(limitParam, 10) : null;
+
+        ctx.waitUntil(
+          runPerDealerBackfill(env, sinceDate || '10-jun-2026 00:00', offset, limit)
+            .catch(err => console.error('[backfill-per-dealer] background run failed:', err.message))
+        );
+
+        return jsonResponse({
+          started: true,
+          message: 'Per-dealer backfill running in the background — check the Cloudflare log stream for progress (search "per_dealer_backfill") and the final summary (search "per_dealer_backfill_done").',
+          sinceDate: sinceDate || '(default)',
+          offset, limit,
+        }, 202, origin, env);
       }
 
       return jsonResponse({ error: 'Not found' }, 404, origin, env);
@@ -191,8 +235,6 @@ export default {
   },
 
   // ── Scheduled handler (cron) ──────────────────────────────────
-  // Daily sync of policy application/finance/transaction status from Edith
-  // into policy_events. See routes/statusSync.js for implementation.
   async scheduled(event, env, ctx) {
     ctx.waitUntil(runStatusSync(env));
   },

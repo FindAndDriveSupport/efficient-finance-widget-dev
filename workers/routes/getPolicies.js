@@ -37,7 +37,9 @@ export async function handleGetPolicies(request, ctx, jsonResponse) {
 
   // Build query
   let query = `
-    SELECT id, dealer_key, policy_number, applicant_id, sales_ref, branch_code, finance_type, created_at
+    SELECT id, dealer_key, policy_number, applicant_id, sales_ref, branch_code, finance_type, created_at,
+           application_status, finance_status, finance_company, transaction_status,
+           last_access_date, status_last_checked
     FROM policy_events
     WHERE dealer_key = ?
   `;
@@ -66,4 +68,4 @@ export async function handleGetPolicies(request, ctx, jsonResponse) {
     console.error('getPolicies DB error:', err.message);
     return jsonResponse({ error: 'Failed to fetch policies' }, 500, origin, env);
   }
-                        }
+}

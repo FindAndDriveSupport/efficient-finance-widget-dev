@@ -40,6 +40,19 @@ export async function getSeritiToken(env, dealerKey) {
   const { apiKey, apiSecret } = await getDealerCredentials(env, dealerKey);
 
   if (!apiKey || !apiSecret) {
+    // Previously threw with no logging at all — if this fired, the only
+    // trace was whatever caught it further up the call chain (now
+    // preQual.js's catch block logs err.message, but nothing logged HERE,
+    // at the actual point of failure). Logging directly at each throw
+    // point makes future alerts unambiguous about exactly which of the
+    // three failure modes in this function occurred, rather than relying
+    // on the error message string surviving intact through every caller.
+    console.error(JSON.stringify({
+      level: 'error',
+      type: 'seriti_auth_missing_credentials',
+      dealerKey: dealerKey || 'global',
+      ts: new Date().toISOString(),
+    }));
     throw new Error(`Seriti credentials not found for dealer: ${dealerKey || 'global'}`);
   }
 
@@ -52,12 +65,29 @@ export async function getSeritiToken(env, dealerKey) {
 
   if (!response.ok) {
     const text = await response.text();
+    console.error(JSON.stringify({
+      level: 'error',
+      type: 'seriti_auth_failed',
+      dealerKey: dealerKey || 'global',
+      status: response.status,
+      body: text.substring(0, 2000),
+      ts: new Date().toISOString(),
+    }));
     throw new Error(`Seriti auth failed (${response.status}): ${text}`);
   }
 
   const data = await response.json();
   const token = data.token || data.access_token || data.accessToken;
-  if (!token) throw new Error('Seriti auth: no token in response');
+  if (!token) {
+    console.error(JSON.stringify({
+      level: 'error',
+      type: 'seriti_auth_no_token_in_response',
+      dealerKey: dealerKey || 'global',
+      body: JSON.stringify(data).substring(0, 2000),
+      ts: new Date().toISOString(),
+    }));
+    throw new Error('Seriti auth: no token in response');
+  }
 
   // Cache for 58 minutes
   if (env.SERITI_CACHE) {

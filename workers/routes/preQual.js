@@ -64,6 +64,22 @@ export async function handlePreQual(request, ctx, jsonResponse) {
       body: JSON.stringify(seritiPayload),
     }, env, dealerConfig?.key);
   } catch (err) {
+    // Previously this failed silently — no logging call at all, just a
+    // bare 502 back to the frontend. That meant every alert for this
+    // endpoint had zero "Recent Logs" to diagnose from, since alert-worker
+    // (the Tail Worker generating alerts) only has visibility into what
+    // actually gets logged. Now logs the real failure reason (network
+    // error, Seriti non-2xx, timeout, etc.) before returning, matching the
+    // logError()-before-return pattern already used in createPolicy.js.
+    console.error(JSON.stringify({
+      level: 'error',
+      type: 'seriti_prequal_failed',
+      dealerKey: dealerConfig?.key,
+      branchCode: dealerConfig?.branchCode,
+      mobileNumber: body.mobileNumber ? '✓' : null,
+      error: err.message,
+      ts: new Date().toISOString(),
+    }));
     return jsonResponse({ error: 'Seriti API error', details: err.message }, 502, origin, env);
   }
   // Return only what the frontend needs
