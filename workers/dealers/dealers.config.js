@@ -183,6 +183,23 @@ export function isOriginAllowed(origin) {
 }
 
 /**
+ * Finds a dealer entry by its branchCode. Used when branchCode is
+ * overridden via query param (multi-branch dealer group support, e.g.
+ * Alpine Motors) so the accompanying dealershipID can be kept in sync
+ * with the resolved branch rather than left stale from whichever dealer
+ * X-Dealer-Key/origin originally resolved to.
+ */
+export function getDealerByBranchCode(branchCode) {
+  if (!branchCode) return null;
+  for (const [key, config] of Object.entries(DEALERS)) {
+    if (config.branchCode === branchCode) {
+      return { key, ...config };
+    }
+  }
+  return null;
+}
+
+/**
  * Returns all dealer entries sharing a given groupKey, in the same
  * { key, ...config } shape as getDealerConfig. Used by billing-worker and
  * the analytics dashboard to roll up metrics/invoices across a dealer group.
