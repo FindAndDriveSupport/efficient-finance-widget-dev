@@ -1,0 +1,84 @@
+# Copies the latest code from the PROD repo into this DEV repo and opens a pull request for you to review.
+# Run it by hand: Actions tab -> "Sync from prod" -> Run workflow.
+#
+# One-time setup in THIS (dev) repo:
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#     PROD_REPO_TOKEN = a read-only token for the prod repo (see the steps Claude gave you)
+#   Settings -> Actions -> General -> Workflow permissions:
+#     "Read and write permissions" + tick "Allow GitHub Actions to create and approve pull requests"
+name: Sync from prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      prod_repo:
+        description: "Prod repository, e.g. your-org/efficient-finance-widget"
+        required: true
+      prod_branch:
+        description: "Prod branch to copy from"
+        default: main
+        required: true
+      target_branch:
+        description: "Dev branch the pull request goes into"
+        default: dev
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+
+      - name: Check out prod
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.prod_repo }}
+          ref: ${{ inputs.prod_branch }}
+          token: ${{ secrets.PROD_REPO_TOKEN }}
+          path: _prod
+
+      - name: Copy prod over dev (keeping dev-only files)
+        run: |
+          # Never copied from prod: git data, dependencies, ALL workflows (so prod's deploy can never run from dev),
+          # the wrangler config (dev has its own), env files, and anything listed in .syncignore.
+          cat > /tmp/excludes <<'EOF'
+          .git/
+          node_modules/
+          .github/
+          wrangler.toml
+          wrangler.json
+          wrangler.jsonc
+          wrangler.dev.*
+          .env
+          .env.*
+          .dev.vars
+          .syncignore
+          EOF
+          [ -f .syncignore ] && cat .syncignore >> /tmp/excludes
+          rsync -a --delete --exclude-from=/tmp/excludes _prod/ ./
+          rm -rf _prod
+          git status --short | head -50
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then echo "Dev is already identical to prod. Nothing to sync."; exit 0; fi
+          BRANCH="sync/prod-$(date +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "Sync from prod (${{ inputs.prod_repo }}@${{ inputs.prod_branch }})"
+          git push origin "$BRANCH"
+          gh pr create --base "${{ inputs.target_branch }}" --head "$BRANCH" \
+            --title "Sync from prod ($(date +%Y-%m-%d))" \
+            --body "Copies the latest code from ${{ inputs.prod_repo }} (${{ inputs.prod_branch }}). Dev-only files (workflows, wrangler config, env files) were not touched. Review the file list, then merge to deploy to dev."
