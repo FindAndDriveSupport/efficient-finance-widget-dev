@@ -13,6 +13,13 @@ import { handleDealerConfig }    from './routes/dealerConfig.js';
 import { handleAddressSearch }   from './routes/addressSearch.js';
 import { handleGetPolicies }     from './routes/getPolicies.js';
 import { handleLookups }         from './routes/lookups.js';
+import { handleVehicleContextResolve, handleVehicleMmcodeLookup } from './routes/vehicleContextResolve.js';
+import { handleVehicleStockMakes, handleVehicleStockModels } from './routes/vehicleStock.js';
+import { handleVehicleStockUnits } from './routes/vehicleStockUnits.js';
+import { handlePartialLead } from './routes/partialLead.js';
+import { handleTrackProgress, handleProgressLookup } from './routes/progress.js';
+import { handleExtractDocuments } from './routes/extractDocuments.js';
+import { handleDocumentReview } from './routes/documentIntegrity.js';
 import { runStatusSync, runFullBackfill, runPerDealerBackfill, debugFetchStatusListXML, debugFetchPolicyDetailsXML } from './routes/statusSync.js';
 
 // ── CORS headers ──────────────────────────────────────────────
@@ -22,7 +29,7 @@ function corsHeaders(origin, env) {
   return {
     'Access-Control-Allow-Origin': allowed ? (origin || '*') : 'null',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Dealer-Key, X-Api-Key',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Dealer-Key, X-Api-Key, X-Tracking-Key',
     'Access-Control-Max-Age': '86400',
   };
 }
@@ -102,6 +109,15 @@ export default {
       if (path === '/api/address-search' && method === 'GET') {
         return handleAddressSearch(request, ctx2, jsonResponse);
       }
+      if (path === '/api/lookup/vehicle-stock-makes' && method === 'GET') {
+        return handleVehicleStockMakes(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/lookup/vehicle-stock-units' && method === 'GET') {
+        return handleVehicleStockUnits(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/lookup/vehicle-stock-models' && method === 'GET') {
+        return handleVehicleStockModels(request, ctx2, jsonResponse);
+      }
       if (path.startsWith('/api/lookup/') && method === 'GET') {
         return handleLookups(request, ctx2, jsonResponse);
       }
@@ -114,8 +130,30 @@ export default {
       if (path === '/api/policy/documents' && method === 'POST') {
         return handleSubmitDocuments(request, ctx2, jsonResponse);
       }
+      if (path === '/api/leads/partial' && method === 'POST') {
+        return handlePartialLead(request, ctx2, jsonResponse);
+      }
+      // Step-by-step application progress (standalone app → D1 application_progress)
+      if (path === '/api/documents/extract' && method === 'POST') {
+        return handleExtractDocuments(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/documents/review' && method === 'GET') {
+        return handleDocumentReview(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/progress/track' && method === 'POST') {
+        return handleTrackProgress(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/progress/lookup' && method === 'GET') {
+        return handleProgressLookup(request, ctx2, jsonResponse);
+      }
       if (path === '/api/policies' && method === 'GET') {
         return handleGetPolicies(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/vehicle-context/resolve' && method === 'POST') {
+        return handleVehicleContextResolve(request, ctx2, jsonResponse);
+      }
+      if (path === '/api/vehicle-context/mmcode' && method === 'GET') {
+        return handleVehicleMmcodeLookup(request, ctx2, jsonResponse);
       }
 
       // ── TEMPORARY DEBUG ROUTE — remove after testing statusSync ──
