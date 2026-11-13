@@ -48,11 +48,14 @@ jobs:
       - name: Copy prod over dev (keeping dev-only files)
         run: |
           # Never copied from prod: git data, dependencies, ALL workflows (so prod's deploy can never run from dev),
-          # the wrangler config (dev has its own), env files, and anything listed in .syncignore.
+          # the wrangler config (dev has its own), infra/ (Terraform for prod), env files, and anything listed in .syncignore.
+          # _prod/ itself must be excluded or rsync --delete removes the folder it is copying from.
           cat > /tmp/excludes <<'EOF'
+          _prod/
           .git/
           node_modules/
           .github/
+          infra/
           wrangler.toml
           wrangler.json
           wrangler.jsonc
@@ -82,3 +85,4 @@ jobs:
           gh pr create --base "${{ inputs.target_branch }}" --head "$BRANCH" \
             --title "Sync from prod ($(date +%Y-%m-%d))" \
             --body "Copies the latest code from ${{ inputs.prod_repo }} (${{ inputs.prod_branch }}). Dev-only files (workflows, wrangler config, env files) were not touched. Review the file list, then merge to deploy to dev."
+
