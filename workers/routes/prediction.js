@@ -172,6 +172,32 @@ export async function handlePrediction(request, ctx, jsonResponse) {
           systemDown: true,
         }, 502, origin, env);
       }
+
+      // Seriti rejected the applicant's data (4xx, e.g. "Invalid Id number").
+      // This is bad input, not an outage: log as a warning (no alert), and
+      // return a non-retryable 422 instead of a 502 so clients don't retry.
+      const clientErr = msg.match(/Seriti API error \((4\d\d)\)/);
+      if (clientErr) {
+        console.warn(JSON.stringify({
+          level: 'warn',
+          type: 'seriti_prediction_rejected',
+          dealerKey: dealerConfig?.key,
+          applicantId,
+          seritiStatus: Number(clientErr[1]),
+          error: msg.substring(0, 500),
+          ts: new Date().toISOString(),
+        }));
+        const invalidId = /invalid id number/i.test(msg);
+        return jsonResponse({
+          error: invalidId
+            ? "We couldn't verify this ID number. Please check it matches your ID document exactly."
+            : "We couldn't process your details. Please check them and try again.",
+          code: 422,
+          retryable: false,
+          invalidId,
+        }, 422, origin, env);
+      }
+
       console.error(JSON.stringify({
         level: 'error',
         type: 'seriti_prediction_error',
