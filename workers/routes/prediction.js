@@ -174,12 +174,14 @@ export async function handlePrediction(request, ctx, jsonResponse) {
       }
 
       // Seriti rejected the applicant's data (4xx, e.g. "Invalid Id number").
-      // This is bad input, not an outage: log as a warning (no alert), and
+      // This is bad input, not an outage: log at info level (no alert), and
       // return a non-retryable 422 instead of a 502 so clients don't retry.
       const clientErr = msg.match(/Seriti API error \((4\d\d)\)/);
       if (clientErr) {
-        console.warn(JSON.stringify({
-          level: 'warn',
+        // Logged at info level: the alert-worker's lead_flow_error rule matches
+        // the keyword "dealer" (from dealerKey) in any warn/error log.
+        console.log(JSON.stringify({
+          level: 'info',
           type: 'seriti_prediction_rejected',
           dealerKey: dealerConfig?.key,
           applicantId,
